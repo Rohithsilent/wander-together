@@ -60,6 +60,14 @@ export const createGroup = async (data: Omit<GroupData, "createdAt">) => {
   return groupRef.id;
 };
 
+export const getUserGroups = async (userId: string) => {
+  const snap = await getDocs(query(collection(db, "groupMembers"), where("userId", "==", userId)));
+  const groupIds = snap.docs.map((d) => d.data().groupId);
+  if (groupIds.length === 0) return [];
+  const groups = await Promise.all(groupIds.map((gid) => getGroup(gid)));
+  return groups.filter(Boolean);
+};
+
 export const getGroups = async () => {
   const snap = await getDocs(query(collection(db, "groups"), orderBy("createdAt", "desc")));
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
