@@ -38,6 +38,7 @@ export interface GroupData {
   description: string;
   isPrivate: boolean;
   image?: string;
+  places?: Array<{ name: string; lat: number; lng: number }>;
   createdBy: string;
   createdByName: string;
   createdAt: ReturnType<typeof serverTimestamp>;
