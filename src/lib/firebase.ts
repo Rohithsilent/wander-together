@@ -6,12 +6,13 @@ import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID",
+  apiKey: "AIzaSyA9ytHS1IB89S2XLZH6_RRdn11RvveUmC4",
+  authDomain: "wanderbuddy-4b130.firebaseapp.com",
+  projectId: "wanderbuddy-4b130",
+  storageBucket: "wanderbuddy-4b130.firebasestorage.app",
+  messagingSenderId: "754580079870",
+  appId: "1:754580079870:web:3191604261a05934d251af",
+  measurementId: "G-0917B3Y9QH",
 };
 
 const app = initializeApp(firebaseConfig);
