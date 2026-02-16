@@ -3,7 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MapPin, Calendar, DollarSign, Users, Send, Plus, MessageCircle, Receipt, Loader2, UserMinus, Check, X } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, lazy, Suspense } from "react";
+
+const ItineraryMap = lazy(() => import("@/components/map/ItineraryMap"));
 import { useParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -245,6 +247,11 @@ const GroupDetail = () => {
 
             {/* Details */}
             <TabsContent value="details" className="space-y-6">
+              {group.places?.length > 0 && (
+                <Suspense fallback={null}>
+                  <ItineraryMap places={group.places} />
+                </Suspense>
+              )}
               <div className="bg-card rounded-2xl border shadow-card p-6">
                 <h3 className="font-bold text-foreground mb-3">About this trip</h3>
                 <p className="text-muted-foreground">{group.description || "No description provided."}</p>

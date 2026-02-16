@@ -10,12 +10,15 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { createGroup } from "@/services/firestore";
 import { useState } from "react";
+import type { Place } from "@/types/itinerary";
+import MultiLocationPicker from "@/components/map/MultiLocationPicker";
 
 const CreateGroup = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [places, setPlaces] = useState<Place[]>([]);
   const [form, setForm] = useState({
     destination: "",
     startDate: "",
@@ -30,10 +33,15 @@ const CreateGroup = () => {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
+    if (places.length === 0) {
+      toast({ title: "Missing Itinerary", description: "Please add at least one place to the itinerary.", variant: "destructive" });
+      return;
+    }
     setLoading(true);
     try {
       const groupId = await createGroup({
         destination: form.destination,
+        places,
         startDate: form.startDate,
         endDate: form.endDate,
         budget: form.budget,
@@ -66,6 +74,7 @@ const CreateGroup = () => {
               <Label>Destination</Label>
               <Input placeholder="e.g., Bali, Indonesia" value={form.destination} onChange={e => setForm({ ...form, destination: e.target.value })} required />
             </div>
+            <MultiLocationPicker places={places} onChange={setPlaces} />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Start Date</Label>
