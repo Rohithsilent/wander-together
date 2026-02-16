@@ -1,12 +1,26 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X, Compass } from "lucide-react";
 import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+  const { toast } = useToast();
   const isLanding = location.pathname === "/";
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate("/");
+    } catch {
+      toast({ title: "Error", description: "Failed to logout", variant: "destructive" });
+    }
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass border-b">
@@ -20,11 +34,15 @@ const Navbar = () => {
 
         {/* Desktop */}
         <div className="hidden md:flex items-center gap-6">
-          {isLanding ? (
+          {!user ? (
             <>
-              <a href="#features" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Features</a>
-              <a href="#how-it-works" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">How It Works</a>
-              <a href="#testimonials" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Testimonials</a>
+              {isLanding && (
+                <>
+                  <a href="#features" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Features</a>
+                  <a href="#how-it-works" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">How It Works</a>
+                  <a href="#testimonials" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Testimonials</a>
+                </>
+              )}
               <Link to="/login"><Button variant="hero-outline" size="sm">Login</Button></Link>
               <Link to="/signup"><Button variant="hero" size="sm">Get Started</Button></Link>
             </>
@@ -33,7 +51,7 @@ const Navbar = () => {
               <Link to="/dashboard" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Dashboard</Link>
               <Link to="/ai-assistant" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">AI Assistant</Link>
               <Link to="/profile" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Profile</Link>
-              <Button variant="ghost" size="sm" onClick={() => {}}>Logout</Button>
+              <Button variant="ghost" size="sm" onClick={handleLogout}>Logout</Button>
             </>
           )}
         </div>
@@ -47,10 +65,14 @@ const Navbar = () => {
       {/* Mobile menu */}
       {open && (
         <div className="md:hidden glass border-t p-4 space-y-3">
-          {isLanding ? (
+          {!user ? (
             <>
-              <a href="#features" className="block text-sm font-medium text-muted-foreground" onClick={() => setOpen(false)}>Features</a>
-              <a href="#how-it-works" className="block text-sm font-medium text-muted-foreground" onClick={() => setOpen(false)}>How It Works</a>
+              {isLanding && (
+                <>
+                  <a href="#features" className="block text-sm font-medium text-muted-foreground" onClick={() => setOpen(false)}>Features</a>
+                  <a href="#how-it-works" className="block text-sm font-medium text-muted-foreground" onClick={() => setOpen(false)}>How It Works</a>
+                </>
+              )}
               <div className="flex gap-2 pt-2">
                 <Link to="/login"><Button variant="hero-outline" size="sm">Login</Button></Link>
                 <Link to="/signup"><Button variant="hero" size="sm">Get Started</Button></Link>
@@ -61,6 +83,7 @@ const Navbar = () => {
               <Link to="/dashboard" className="block text-sm font-medium text-muted-foreground" onClick={() => setOpen(false)}>Dashboard</Link>
               <Link to="/ai-assistant" className="block text-sm font-medium text-muted-foreground" onClick={() => setOpen(false)}>AI Assistant</Link>
               <Link to="/profile" className="block text-sm font-medium text-muted-foreground" onClick={() => setOpen(false)}>Profile</Link>
+              <Button variant="ghost" size="sm" onClick={handleLogout}>Logout</Button>
             </>
           )}
         </div>
