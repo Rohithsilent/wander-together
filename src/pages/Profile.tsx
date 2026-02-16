@@ -4,17 +4,19 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Camera, Loader2 } from "lucide-react";
+import { Camera, Loader2, MapPin } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import { getUserProfile, updateUserProfile } from "@/services/firestore";
+import { getUserProfile, updateUserProfile, getUserGroups } from "@/services/firestore";
+import { Link } from "react-router-dom";
 
 const Profile = () => {
   const { toast } = useToast();
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [joinedGroups, setJoinedGroups] = useState<any[]>([]);
   const [profile, setProfile] = useState({
     name: "",
     age: "",
@@ -27,9 +29,12 @@ const Profile = () => {
 
   useEffect(() => {
     if (!user) return;
-    const fetch = async () => {
+    const fetchData = async () => {
       try {
-        const data = await getUserProfile(user.uid);
+        const [data, groups] = await Promise.all([
+          getUserProfile(user.uid),
+          getUserGroups(user.uid),
+        ]);
         if (data) {
           setProfile({
             name: (data as any).name || user.displayName || "",
@@ -41,13 +46,14 @@ const Profile = () => {
             languages: (data as any).languages || "",
           });
         }
+        setJoinedGroups(groups);
       } catch (error) {
         console.error("Error loading profile:", error);
       } finally {
         setLoading(false);
       }
     };
-    fetch();
+    fetchData();
   }, [user]);
 
   const handleSave = async (e: React.FormEvent) => {
@@ -152,6 +158,29 @@ const Profile = () => {
               {saving ? "Saving..." : "Save Profile"}
             </Button>
           </form>
+
+          <div className="mt-8">
+            <h2 className="text-2xl font-bold text-foreground mb-4">Joined Groups</h2>
+            {joinedGroups.length === 0 ? (
+              <p className="text-muted-foreground">You haven't joined any groups yet.</p>
+            ) : (
+              <div className="space-y-3">
+                {joinedGroups.map((g: any) => (
+                  <Link key={g.id} to={`/group/${g.id}`} className="block bg-card rounded-xl border shadow-card p-4 hover:shadow-elevated transition-shadow">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-lg gradient-primary flex items-center justify-center">
+                        <MapPin className="h-5 w-5 text-primary-foreground" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-foreground">{g.destination}</p>
+                        <p className="text-xs text-muted-foreground">{g.startDate} — {g.endDate}</p>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </main>
     </div>

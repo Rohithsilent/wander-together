@@ -2,11 +2,22 @@ import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MapPin, Calendar, DollarSign, Users, Send, Plus, MessageCircle, Receipt, Loader2, UserMinus, Check, X } from "lucide-react";
+import { MapPin, Calendar, DollarSign, Users, Send, Plus, MessageCircle, Receipt, Loader2, UserMinus, Check, X, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { useState, useRef, useEffect, lazy, Suspense } from "react";
 
 const ItineraryMap = lazy(() => import("@/components/map/ItineraryMap"));
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -23,10 +34,12 @@ import {
   getJoinRequests,
   approveJoinRequest,
   rejectJoinRequest,
+  deleteGroup,
 } from "@/services/firestore";
 
 const GroupDetail = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
   const [group, setGroup] = useState<any>(null);
@@ -196,6 +209,30 @@ const GroupDetail = () => {
   const totalExpenses = expenses.reduce((s: number, e: any) => s + (e.amount || 0), 0);
   const perPerson = members.length > 0 ? totalExpenses / members.length : 0;
 
+  // Who owes whom calculation
+  const balances: { from: string; to: string; amount: number }[] = [];
+  if (members.length > 0 && expenses.length > 0) {
+    const paid: Record<string, number> = {};
+    members.forEach((m: any) => { paid[m.userName] = 0; });
+    expenses.forEach((e: any) => { paid[e.paidByName] = (paid[e.paidByName] || 0) + (e.amount || 0); });
+    const netBalance = Object.entries(paid).map(([name, amount]) => ({ name, net: amount - perPerson }));
+    const debtors = netBalance.filter(b => b.net < 0).map(b => ({ ...b }));
+    const creditors = netBalance.filter(b => b.net > 0).map(b => ({ ...b }));
+    debtors.sort((a, b) => a.net - b.net);
+    creditors.sort((a, b) => b.net - a.net);
+    let i = 0, j = 0;
+    while (i < debtors.length && j < creditors.length) {
+      const amount = Math.min(-debtors[i].net, creditors[j].net);
+      if (amount > 0.01) {
+        balances.push({ from: debtors[i].name, to: creditors[j].name, amount });
+      }
+      debtors[i].net += amount;
+      creditors[j].net -= amount;
+      if (Math.abs(debtors[i].net) < 0.01) i++;
+      if (Math.abs(creditors[j].net) < 0.01) j++;
+    }
+  }
+
   const fallbackImage = "https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800&h=400&fit=crop";
 
   return (
@@ -211,11 +248,38 @@ const GroupDetail = () => {
               <span className="bg-accent text-accent-foreground text-xs font-bold px-3 py-1 rounded-full">{group.travelType}</span>
               <h1 className="text-3xl md:text-4xl font-bold text-primary-foreground mt-2">{group.destination}</h1>
             </div>
-            {!isMember ? (
-              <Button variant="accent" onClick={handleJoin}>{group.isPrivate ? "Request to Join" : "Join Group"}</Button>
-            ) : !isAdmin ? (
-              <Button variant="outline" className="border-primary-foreground/40 text-primary-foreground hover:bg-primary-foreground/10" onClick={handleLeave}>Leave Group</Button>
-            ) : null}
+            <div className="flex gap-2">
+              {!isMember ? (
+                <Button variant="accent" onClick={handleJoin}>{group.isPrivate ? "Request to Join" : "Join Group"}</Button>
+              ) : !isAdmin ? (
+                <Button variant="outline" className="border-primary-foreground/40 text-primary-foreground hover:bg-primary-foreground/10" onClick={handleLeave}>Leave Group</Button>
+              ) : null}
+              {isAdmin && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" size="icon"><Trash2 className="h-4 w-4" /></Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete Group</AlertDialogTitle>
+                      <AlertDialogDescription>This action cannot be undone. This will permanently delete the group and all associated data.</AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={async () => {
+                        try {
+                          await deleteGroup(id!);
+                          toast({ title: "Group Deleted" });
+                          navigate("/dashboard");
+                        } catch (error: any) {
+                          toast({ title: "Error", description: error.message, variant: "destructive" });
+                        }
+                      }}>Delete</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
+            </div>
           </div>
         </div>
 
@@ -382,6 +446,20 @@ const GroupDetail = () => {
                   ))}
                 </div>
               </div>
+
+              {balances.length > 0 && (
+                <div className="bg-card rounded-2xl border shadow-card p-6">
+                  <h3 className="font-bold text-foreground mb-4">Who Owes Whom</h3>
+                  <div className="space-y-3">
+                    {balances.map((b, i) => (
+                      <div key={i} className="flex items-center justify-between py-2 border-b last:border-0">
+                        <p className="text-sm text-foreground"><span className="font-semibold">{b.from}</span> <span className="text-muted-foreground">owes</span> <span className="font-semibold">{b.to}</span></p>
+                        <span className="font-bold text-primary">${b.amount.toFixed(2)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </TabsContent>
           </Tabs>
         </div>

@@ -1,6 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Compass } from "lucide-react";
+import { Menu, X, Compass, Sun, Moon } from "lucide-react";
+import { useTheme } from "@/components/ThemeProvider";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -11,6 +12,7 @@ const Navbar = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const { toast } = useToast();
+  const { theme, toggleTheme } = useTheme();
   const isLanding = location.pathname === "/";
 
   const handleLogout = async () => {
@@ -51,6 +53,9 @@ const Navbar = () => {
               <Link to="/dashboard" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Dashboard</Link>
               <Link to="/ai-assistant" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">AI Assistant</Link>
               <Link to="/profile" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Profile</Link>
+              <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme">
+                {theme === "light" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+              </Button>
               <Button variant="ghost" size="sm" onClick={handleLogout}>Logout</Button>
             </>
           )}
@@ -83,7 +88,12 @@ const Navbar = () => {
               <Link to="/dashboard" className="block text-sm font-medium text-muted-foreground" onClick={() => setOpen(false)}>Dashboard</Link>
               <Link to="/ai-assistant" className="block text-sm font-medium text-muted-foreground" onClick={() => setOpen(false)}>AI Assistant</Link>
               <Link to="/profile" className="block text-sm font-medium text-muted-foreground" onClick={() => setOpen(false)}>Profile</Link>
-              <Button variant="ghost" size="sm" onClick={handleLogout}>Logout</Button>
+              <div className="flex gap-2 items-center">
+                <Button variant="ghost" size="icon" onClick={toggleTheme}>
+                  {theme === "light" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+                </Button>
+                <Button variant="ghost" size="sm" onClick={handleLogout}>Logout</Button>
+              </div>
             </>
           )}
         </div>
