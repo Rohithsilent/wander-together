@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Send, Bot, User, Trash2, Loader2 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
+import { sendMessageToGemini } from "@/services/gemini";
+import { toast } from "sonner";
 
 interface Message {
   role: "user" | "assistant";
@@ -34,23 +36,21 @@ const AIAssistant = () => {
     setInput("");
     setIsLoading(true);
 
-    // Simulate AI response (will be replaced with Gemini API)
-    setTimeout(() => {
-      const responses = [
-        "Great question! For that destination, I'd recommend packing light layers and comfortable walking shoes. The weather can be unpredictable so a rain jacket is essential.",
-        "Based on your budget, I'd suggest looking into hostels or Airbnb stays. You can save a lot by cooking some meals and using public transport.",
-        "That's a wonderful destination! The best time to visit is during spring (March-May) when the weather is mild and tourist crowds are manageable.",
-        "For a 10-day trip there, I'd budget around $1,500-$2,500 per person including flights, accommodation, food, and activities.",
-        "Don't forget to check visa requirements! Many countries offer visa-on-arrival or e-visa options that are very convenient.",
-      ];
+    try {
+      const history = messages.filter(m => m.content !== "Hello! I'm your AI travel assistant. Ask me about destinations, packing tips, budget planning, or anything travel-related! ✈️");
+      const aiResponse = await sendMessageToGemini(input, history.map(m => ({ role: m.role, content: m.content })));
       const aiMsg: Message = {
         role: "assistant",
-        content: responses[Math.floor(Math.random() * responses.length)],
+        content: aiResponse,
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, aiMsg]);
+    } catch (error: any) {
+      toast.error(error.message || "Failed to get AI response");
+      setMessages(prev => [...prev, { role: "assistant", content: "Sorry, I encountered an error. Please try again. 🙁", timestamp: new Date() }]);
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   const clearChat = () => {
