@@ -234,6 +234,7 @@ const GroupDetail = () => {
   }
 
   const fallbackImage = "https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800&h=400&fit=crop";
+  const heroImage = group.coverImage || group.image || fallbackImage;
 
   return (
     <div className="min-h-screen bg-background">
@@ -241,7 +242,7 @@ const GroupDetail = () => {
       <main className="pt-16">
         {/* Hero */}
         <div className="relative h-64 md:h-80">
-          <img src={group.image || fallbackImage} alt={group.destination} className="w-full h-full object-cover" />
+          <img src={heroImage} alt={group.destination} className="w-full h-full object-cover" loading="lazy" />
           <div className="absolute inset-0 bg-gradient-to-t from-foreground/70 to-transparent" />
           <div className="absolute bottom-6 left-6 right-6 flex items-end justify-between">
             <div>

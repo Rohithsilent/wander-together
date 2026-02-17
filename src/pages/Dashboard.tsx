@@ -50,7 +50,7 @@ const Dashboard = () => {
               travelType: g.travelType || "Leisure",
               maxMembers: g.maxMembers || 6,
               description: g.description || "",
-              image: g.image || fallbackImages[i % fallbackImages.length],
+              image: g.coverImage || g.image || fallbackImages[i % fallbackImages.length],
               memberCount: members.length,
             };
           })

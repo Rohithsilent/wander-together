@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { createGroup } from "@/services/firestore";
+import { fetchDestinationImage } from "@/services/imageService";
 import { useState } from "react";
 import type { Place } from "@/types/itinerary";
 import MultiLocationPicker from "@/components/map/MultiLocationPicker";
@@ -39,9 +40,12 @@ const CreateGroup = () => {
     }
     setLoading(true);
     try {
+      const imageQuery = places.length > 0 ? places[0].name : form.destination;
+      const coverImage = await fetchDestinationImage(imageQuery);
       const groupId = await createGroup({
         destination: form.destination,
         places,
+        coverImage,
         startDate: form.startDate,
         endDate: form.endDate,
         budget: form.budget,
