@@ -5,18 +5,22 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Camera, Loader2, MapPin } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { getUserProfile, updateUserProfile, getUserGroups } from "@/services/firestore";
 import { Link } from "react-router-dom";
+import { uploadImageToCloudinary, validateImageFile } from "@/services/cloudinaryService";
 
 const Profile = () => {
   const { toast } = useToast();
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [photoURL, setPhotoURL] = useState<string | null>(null);
   const [joinedGroups, setJoinedGroups] = useState<any[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [profile, setProfile] = useState({
     name: "",
     age: "",
@@ -45,6 +49,7 @@ const Profile = () => {
             budget: (data as any).budget || "",
             languages: (data as any).languages || "",
           });
+          setPhotoURL((data as any).photoURL || user.photoURL || null);
         }
         setJoinedGroups(groups);
       } catch (error) {
@@ -88,15 +93,46 @@ const Profile = () => {
 
           <div className="flex items-center gap-6 mb-8">
             <div className="relative">
-              {user?.photoURL ? (
-                <img src={user.photoURL} alt="Profile" className="h-24 w-24 rounded-2xl object-cover" />
+              {photoURL ? (
+                <img src={photoURL} alt="Profile" className="h-24 w-24 rounded-2xl object-cover" />
               ) : (
                 <div className="h-24 w-24 rounded-2xl gradient-primary flex items-center justify-center text-3xl font-bold text-primary-foreground">
                   {(profile.name || "?")[0]}
                 </div>
               )}
-              <button className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full bg-accent text-accent-foreground flex items-center justify-center shadow-lg">
-                <Camera className="h-4 w-4" />
+              <input
+                type="file"
+                accept="image/*"
+                ref={fileInputRef}
+                className="hidden"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file || !user) return;
+                  const error = validateImageFile(file, 3);
+                  if (error) {
+                    toast({ title: "Invalid File", description: error, variant: "destructive" });
+                    return;
+                  }
+                  setUploadingPhoto(true);
+                  try {
+                    const url = await uploadImageToCloudinary(file, "profile_pictures");
+                    await updateUserProfile(user.uid, { photoURL: url });
+                    setPhotoURL(url);
+                    toast({ title: "Photo Updated", description: "Your profile picture has been updated." });
+                  } catch (err: any) {
+                    toast({ title: "Upload Failed", description: err.message, variant: "destructive" });
+                  } finally {
+                    setUploadingPhoto(false);
+                  }
+                }}
+              />
+              <button
+                type="button"
+                className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full bg-accent text-accent-foreground flex items-center justify-center shadow-lg disabled:opacity-50"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploadingPhoto}
+              >
+                {uploadingPhoto ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
               </button>
             </div>
             <div>
