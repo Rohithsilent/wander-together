@@ -2,7 +2,8 @@ import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MapPin, Calendar, DollarSign, Users, Send, Plus, MessageCircle, Receipt, Loader2, UserMinus, Check, X, Trash2 } from "lucide-react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { MapPin, Calendar, DollarSign, Users, Send, Plus, MessageCircle, Receipt, Loader2, UserMinus, Check, X, Trash2, ImageIcon } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,6 +16,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useState, useRef, useEffect, lazy, Suspense } from "react";
+import { uploadImageToCloudinary, validateImageFile } from "@/services/cloudinaryService";
 
 const ItineraryMap = lazy(() => import("@/components/map/ItineraryMap"));
 import { useParams, useNavigate } from "react-router-dom";
@@ -49,9 +51,12 @@ const GroupDetail = () => {
   const [joinRequests, setJoinRequests] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(true);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [expenseForm, setExpenseForm] = useState({ description: "", amount: "" });
   const [showExpenseForm, setShowExpenseForm] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const chatImageInputRef = useRef<HTMLInputElement>(null);
 
   const isAdmin = members.some((m) => m.userId === user?.uid && m.role === "admin");
   const isMember = members.some((m) => m.userId === user?.uid);
@@ -100,10 +105,28 @@ const GroupDetail = () => {
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !user || !id) return;
     try {
-      await sendChatMessage(id, user.uid, user.displayName || "Anonymous", user.photoURL || "", newMessage);
+      await sendChatMessage(id, user.uid, user.displayName || "Anonymous", user.photoURL || "", newMessage, "text");
       setNewMessage("");
     } catch (error: any) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
+  };
+
+  const handleSendImage = async (file: File) => {
+    if (!user || !id) return;
+    const error = validateImageFile(file, 5);
+    if (error) {
+      toast({ title: "Invalid File", description: error, variant: "destructive" });
+      return;
+    }
+    setUploadingImage(true);
+    try {
+      const url = await uploadImageToCloudinary(file, `chat_images/${id}`);
+      await sendChatMessage(id, user.uid, user.displayName || "Anonymous", user.photoURL || "", url, "image");
+    } catch (err: any) {
+      toast({ title: "Upload Failed", description: err.message, variant: "destructive" });
+    } finally {
+      setUploadingImage(false);
     }
   };
 
@@ -370,11 +393,22 @@ const GroupDetail = () => {
                   )}
                   {messages.map((msg: any, i: number) => {
                     const isOwn = msg.userId === user?.uid;
+                    const isImage = msg.type === "image";
                     return (
                       <div key={msg.id || i} className={`flex ${isOwn ? "justify-end" : "justify-start"}`}>
                         <div className={`max-w-[70%] rounded-2xl px-4 py-2.5 ${isOwn ? "gradient-primary text-primary-foreground rounded-br-md" : "bg-muted text-foreground rounded-bl-md"}`}>
                           {!isOwn && <p className="text-xs font-semibold mb-1 opacity-70">{msg.userName}</p>}
-                          <p className="text-sm">{msg.text}</p>
+                          {isImage ? (
+                            <img
+                              src={msg.text}
+                              alt="Shared image"
+                              className="max-w-[250px] w-full rounded-lg cursor-pointer"
+                              loading="lazy"
+                              onClick={() => setPreviewImage(msg.text)}
+                            />
+                          ) : (
+                            <p className="text-sm">{msg.text}</p>
+                          )}
                           <p className={`text-[10px] mt-1 ${isOwn ? "text-primary-foreground/60" : "text-muted-foreground"}`}>
                             {msg.createdAt?.toDate?.()?.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) || ""}
                           </p>
@@ -385,15 +419,36 @@ const GroupDetail = () => {
                   <div ref={chatEndRef} />
                 </div>
                 {isMember && (
-                  <div className="border-t p-3 flex gap-2">
+                  <div className="border-t p-3 flex gap-2 items-center">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      ref={chatImageInputRef}
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleSendImage(file);
+                        e.target.value = "";
+                      }}
+                    />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => chatImageInputRef.current?.click()}
+                      disabled={uploadingImage}
+                      className="shrink-0"
+                    >
+                      {uploadingImage ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImageIcon className="h-4 w-4" />}
+                    </Button>
                     <Input
                       placeholder="Type a message..."
                       value={newMessage}
                       onChange={e => setNewMessage(e.target.value)}
                       onKeyDown={e => e.key === "Enter" && handleSendMessage()}
                       className="flex-1"
+                      disabled={uploadingImage}
                     />
-                    <Button variant="hero" size="icon" onClick={handleSendMessage}><Send className="h-4 w-4" /></Button>
+                    <Button variant="hero" size="icon" onClick={handleSendMessage} disabled={uploadingImage}><Send className="h-4 w-4" /></Button>
                   </div>
                 )}
               </div>
@@ -465,6 +520,15 @@ const GroupDetail = () => {
           </Tabs>
         </div>
       </main>
+
+      {/* Image Preview Modal */}
+      <Dialog open={!!previewImage} onOpenChange={() => setPreviewImage(null)}>
+        <DialogContent className="max-w-3xl p-2 bg-background/95">
+          {previewImage && (
+            <img src={previewImage} alt="Preview" className="w-full h-auto rounded-lg" />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
