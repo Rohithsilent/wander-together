@@ -1,5 +1,5 @@
 const GEMINI_API_KEY = "AIzaSyCBg_jxPqfUzCZ3rDyaHgMltRip-crnl6Y";
-const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent";
 
 interface GeminiMessage {
   role: "user" | "model";

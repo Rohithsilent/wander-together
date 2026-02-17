@@ -5,6 +5,7 @@ import { Send, Bot, User, Trash2, Loader2 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { sendMessageToGemini } from "@/services/gemini";
 import { toast } from "sonner";
+import ReactMarkdown from "react-markdown";
 
 interface Message {
   role: "user" | "assistant";
@@ -92,7 +93,13 @@ const AIAssistant = () => {
                       {msg.role === "user" ? <User className="h-4 w-4 text-secondary-foreground" /> : <Bot className="h-4 w-4 text-primary-foreground" />}
                     </div>
                     <div className={`rounded-2xl px-4 py-3 ${msg.role === "user" ? "gradient-primary text-primary-foreground rounded-tr-md" : "bg-muted text-foreground rounded-tl-md"}`}>
-                      <p className="text-sm leading-relaxed">{msg.content}</p>
+                      {msg.role === "user" ? (
+                        <p className="text-sm leading-relaxed">{msg.content}</p>
+                      ) : (
+                        <div className="text-sm leading-relaxed prose prose-sm max-w-none prose-headings:mt-3 prose-headings:mb-2 prose-p:my-1.5 prose-ul:my-1.5 prose-ol:my-1.5 prose-li:my-0.5">
+                          <ReactMarkdown>{msg.content}</ReactMarkdown>
+                        </div>
+                      )}
                       <p className={`text-[10px] mt-1.5 ${msg.role === "user" ? "text-primary-foreground/50" : "text-muted-foreground"}`}>
                         {msg.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                       </p>
