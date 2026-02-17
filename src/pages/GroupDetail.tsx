@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { MapPin, Calendar, DollarSign, Users, Send, Plus, MessageCircle, Receipt, Loader2, UserMinus, Check, X, Trash2, ImageIcon } from "lucide-react";
+import { MapPin, Calendar, DollarSign, Users, Send, Plus, MessageCircle, Receipt, Loader2, UserMinus, Check, X, Trash2, ImageIcon, Hotel } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,6 +19,7 @@ import { useState, useRef, useEffect, lazy, Suspense } from "react";
 import { uploadImageToCloudinary, validateImageFile } from "@/services/cloudinaryService";
 
 const ItineraryMap = lazy(() => import("@/components/map/ItineraryMap"));
+const HotelsTab = lazy(() => import("@/components/HotelsTab"));
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -331,6 +332,7 @@ const GroupDetail = () => {
               <TabsTrigger value="details">Details</TabsTrigger>
               <TabsTrigger value="chat" className="flex items-center gap-1"><MessageCircle className="h-3.5 w-3.5" /> Chat</TabsTrigger>
               <TabsTrigger value="expenses" className="flex items-center gap-1"><Receipt className="h-3.5 w-3.5" /> Expenses</TabsTrigger>
+              <TabsTrigger value="hotels" className="flex items-center gap-1"><Hotel className="h-3.5 w-3.5" /> Hotels</TabsTrigger>
             </TabsList>
 
             {/* Details */}
@@ -516,6 +518,19 @@ const GroupDetail = () => {
                   </div>
                 </div>
               )}
+            </TabsContent>
+
+            {/* Hotels */}
+            <TabsContent value="hotels">
+              <Suspense fallback={<div className="flex justify-center py-8"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
+                <HotelsTab
+                  groupId={id!}
+                  userId={user?.uid || ""}
+                  places={group.places || []}
+                  destination={group.destination || ""}
+                  isMember={isMember}
+                />
+              </Suspense>
             </TabsContent>
           </Tabs>
         </div>
