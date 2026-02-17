@@ -32,9 +32,21 @@ const HotelsTab = ({ groupId, userId, places, destination, isMember }: HotelsTab
 
   const refPlace = places?.[0];
 
-  // Subscribe to votes
+  // Subscribe to votes and rebuild hotel list from votes if not fetched
   useEffect(() => {
-    const unsub = subscribeToHotelVotes(groupId, setVotes);
+    const unsub = subscribeToHotelVotes(groupId, (newVotes) => {
+      setVotes(newVotes);
+      // If hotels haven't been fetched from Overpass, reconstruct from votes
+      if (!cacheRef.current && Object.keys(newVotes).length > 0) {
+        const votedHotels: HotelType[] = Object.values(newVotes).map((v) => ({
+          id: v.hotelId,
+          name: v.hotelName,
+          lat: 0,
+          lng: 0,
+        }));
+        setHotels(votedHotels);
+      }
+    });
     return () => unsub();
   }, [groupId]);
 
@@ -170,7 +182,7 @@ const HotelsTab = ({ groupId, userId, places, destination, isMember }: HotelsTab
             const voteCount = voteData?.votes?.length || 0;
             const hasVoted = voteData?.votes?.includes(userId);
             const isTop = hotel.id === topHotelId;
-            const dist = refPlace ? calcDistanceKm(refPlace.lat, refPlace.lng, hotel.lat, hotel.lng) : null;
+            const dist = refPlace && hotel.lat !== 0 && hotel.lng !== 0 ? calcDistanceKm(refPlace.lat, refPlace.lng, hotel.lat, hotel.lng) : null;
 
             return (
               <div
