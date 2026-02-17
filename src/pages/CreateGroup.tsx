@@ -13,6 +13,7 @@ import { fetchDestinationImage } from "@/services/imageService";
 import { useState } from "react";
 import type { Place } from "@/types/itinerary";
 import MultiLocationPicker from "@/components/map/MultiLocationPicker";
+import { motion } from "framer-motion";
 
 const CreateGroup = () => {
   const navigate = useNavigate();
@@ -73,44 +74,96 @@ const CreateGroup = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <motion.div
+      className="min-h-screen app-background-themed"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
       <Navbar />
       <main className="pt-20 pb-12">
-        <div className="container mx-auto px-4 max-w-2xl">
-          <h1 className="text-3xl font-bold text-foreground mb-2">Create a Travel Group</h1>
-          <p className="text-muted-foreground mb-8">Set up your trip and invite fellow travelers.</p>
+        <motion.div
+          className="container mx-auto px-4 max-w-2xl"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+        >
+          <h1 className="text-themed-primary font-extralight leading-tight tracking-tighter mb-2" style={{ fontSize: 'clamp(2rem, 5vw, 3rem)' }}>
+            Create a
+            <br />
+            <span className="font-light">Travel Group</span>
+          </h1>
+          <p className="text-themed-secondary mb-8 font-light">Set up your trip and invite fellow travelers.</p>
 
-          <form onSubmit={handleCreate} className="bg-card rounded-2xl border shadow-card p-8 space-y-6">
+          <form onSubmit={handleCreate} className="glass-themed rounded-3xl p-8 space-y-6">
             <div className="space-y-2">
-              <Label>Destination</Label>
-              <Input placeholder="e.g., Bali, Indonesia" value={form.destination} onChange={e => setForm({ ...form, destination: e.target.value })} required />
+              <Label className="text-themed-tertiary text-xs uppercase tracking-[0.2em] font-light">Destination</Label>
+              <Input
+                placeholder="e.g., Bali, Indonesia"
+                value={form.destination}
+                onChange={e => setForm({ ...form, destination: e.target.value })}
+                required
+                className="glass-themed-subtle text-themed-primary placeholder:text-themed-quaternary h-12 rounded-xl border-themed focus:glass-themed transition-all"
+              />
             </div>
+
             <MultiLocationPicker places={places} onChange={setPlaces} />
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Start Date</Label>
-                <Input type="date" value={form.startDate} onChange={e => setForm({ ...form, startDate: e.target.value })} required />
+                <Label className="text-themed-tertiary text-xs uppercase tracking-[0.2em] font-light">Start Date</Label>
+                <Input
+                  type="date"
+                  value={form.startDate}
+                  onChange={e => setForm({ ...form, startDate: e.target.value })}
+                  required
+                  className="glass-themed-subtle text-themed-primary placeholder:text-themed-quaternary h-12 rounded-xl border-themed focus:glass-themed transition-all"
+                />
               </div>
               <div className="space-y-2">
-                <Label>End Date</Label>
-                <Input type="date" value={form.endDate} onChange={e => setForm({ ...form, endDate: e.target.value })} required />
+                <Label className="text-themed-tertiary text-xs uppercase tracking-[0.2em] font-light">End Date</Label>
+                <Input
+                  type="date"
+                  value={form.endDate}
+                  onChange={e => setForm({ ...form, endDate: e.target.value })}
+                  required
+                  className="glass-themed-subtle text-themed-primary placeholder:text-themed-quaternary h-12 rounded-xl border-themed focus:glass-themed transition-all"
+                />
               </div>
             </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Budget Range</Label>
-                <Input placeholder="e.g., $1,500 - $2,500" value={form.budget} onChange={e => setForm({ ...form, budget: e.target.value })} required />
+                <Label className="text-themed-tertiary text-xs uppercase tracking-[0.2em] font-light">Budget Range</Label>
+                <Input
+                  placeholder="e.g., $1,500 - $2,500"
+                  value={form.budget}
+                  onChange={e => setForm({ ...form, budget: e.target.value })}
+                  required
+                  className="glass-themed-subtle text-themed-primary placeholder:text-themed-quaternary h-12 rounded-xl border-themed focus:glass-themed transition-all"
+                />
               </div>
               <div className="space-y-2">
-                <Label>Max Members</Label>
-                <Input type="number" min={2} max={20} value={form.maxMembers} onChange={e => setForm({ ...form, maxMembers: e.target.value })} required />
+                <Label className="text-themed-tertiary text-xs uppercase tracking-[0.2em] font-light">Max Members</Label>
+                <Input
+                  type="number"
+                  min={2}
+                  max={20}
+                  value={form.maxMembers}
+                  onChange={e => setForm({ ...form, maxMembers: e.target.value })}
+                  required
+                  className="glass-themed-subtle text-themed-primary placeholder:text-themed-quaternary h-12 rounded-xl border-themed focus:glass-themed transition-all"
+                />
               </div>
             </div>
+
             <div className="space-y-2">
-              <Label>Travel Type</Label>
+              <Label className="text-themed-tertiary text-xs uppercase tracking-[0.2em] font-light">Travel Type</Label>
               <Select value={form.travelType} onValueChange={v => setForm({ ...form, travelType: v })}>
-                <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
-                <SelectContent>
+                <SelectTrigger className="glass-themed-subtle text-themed-primary h-12 rounded-xl border-themed">
+                  <SelectValue placeholder="Select type" />
+                </SelectTrigger>
+                <SelectContent className="bg-gray-900 border-white/20">
                   <SelectItem value="adventure">Adventure</SelectItem>
                   <SelectItem value="leisure">Leisure</SelectItem>
                   <SelectItem value="trekking">Trekking</SelectItem>
@@ -118,21 +171,39 @@ const CreateGroup = () => {
                 </SelectContent>
               </Select>
             </div>
+
             <div className="space-y-2">
-              <Label>Description</Label>
-              <Textarea placeholder="Tell potential members about your trip plans..." rows={4} value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} />
+              <Label className="text-themed-tertiary text-xs uppercase tracking-[0.2em] font-light">Description</Label>
+              <Textarea
+                placeholder="Tell potential members about your trip plans..."
+                rows={4}
+                value={form.description}
+                onChange={e => setForm({ ...form, description: e.target.value })}
+                className="glass-themed-subtle text-themed-primary placeholder:text-themed-quaternary rounded-xl border-themed focus:glass-themed transition-all"
+              />
             </div>
-            <div className="flex items-center gap-3">
-              <Switch checked={form.isPrivate} onCheckedChange={v => setForm({ ...form, isPrivate: v })} />
-              <Label>Private Group (requires admin approval to join)</Label>
+
+            <div className="flex items-center gap-3 p-4 rounded-xl glass-themed border-themed">
+              <Switch
+                checked={form.isPrivate}
+                onCheckedChange={v => setForm({ ...form, isPrivate: v })}
+                className="data-[state=checked]:bg-white/30"
+              />
+              <Label className="text-themed-secondary text-sm font-light">Private Group (requires admin approval to join)</Label>
             </div>
-            <Button type="submit" variant="hero" size="lg" className="w-full" disabled={loading}>
+
+            <Button
+              type="submit"
+              size="lg"
+              className="w-full border border-themed rounded-full glass-themed hover:glass-themed-strong text-themed-primary transition-all duration-500 hover:scale-105 hover:border-themed h-12"
+              disabled={loading}
+            >
               {loading ? "Creating..." : "Create Group"}
             </Button>
           </form>
-        </div>
+        </motion.div>
       </main>
-    </div>
+    </motion.div>
   );
 };
 

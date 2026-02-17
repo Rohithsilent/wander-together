@@ -181,9 +181,132 @@
     box-shadow: var(--shadow-elevated);
   }
 
+  /* Premium Glassmorphic Effects */
   .glass {
+    backdrop-filter: blur(16px);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .glass-strong {
+    backdrop-filter: blur(20px);
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+
+  .glass-subtle {
     backdrop-filter: blur(12px);
-    background: hsl(var(--background) / 0.8);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+  }
+
+  /* App Background */
+  .app-background {
+    background: linear-gradient(to bottom right, #1a1a1a, #0f0f0f, #0a0a0a);
+  }
+
+  .app-background-dark {
+    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0f0f0f 100%);
+  }
+
+  /* Theme-Aware Utilities */
+  /* Background */
+  .app-background-themed {
+    background: linear-gradient(to bottom right, #1a1a1a, #0f0f0f, #0a0a0a);
+  }
+
+  .light .app-background-themed {
+    background: linear-gradient(to bottom right, #f8f9fa, #e9ecef, #dee2e6);
+  }
+
+  /* Glass Effects - Theme Aware */
+  .glass-themed {
+    backdrop-filter: blur(16px);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .light .glass-themed {
+    backdrop-filter: blur(16px);
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  }
+
+  .glass-themed-strong {
+    backdrop-filter: blur(20px);
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+
+  .light .glass-themed-strong {
+    backdrop-filter: blur(20px);
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  }
+
+  .glass-themed-subtle {
+    backdrop-filter: blur(12px);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+  }
+
+  .light .glass-themed-subtle {
+    backdrop-filter: blur(12px);
+    background: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  }
+
+  /* Text Colors - Theme Aware */
+  .text-themed-primary {
+    color: rgb(255, 255, 255);
+  }
+
+  .light .text-themed-primary {
+    color: rgb(33, 37, 41);
+  }
+
+  .text-themed-secondary {
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  .light .text-themed-secondary {
+    color: rgba(33, 37, 41, 0.7);
+  }
+
+  .text-themed-tertiary {
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  .light .text-themed-tertiary {
+    color: rgba(33, 37, 41, 0.5);
+  }
+
+  .text-themed-quaternary {
+    color: rgba(255, 255, 255, 0.4);
+  }
+
+  .light .text-themed-quaternary {
+    color: rgba(33, 37, 41, 0.3);
+  }
+
+  /* Border Colors - Theme Aware */
+  .border-themed {
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .light .border-themed {
+    border-color: rgba(0, 0, 0, 0.1);
+  }
+
+  .border-themed-strong {
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+
+  .light .border-themed-strong {
+    border-color: rgba(0, 0, 0, 0.15);
   }
 }
 
