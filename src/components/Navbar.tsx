@@ -26,26 +26,19 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 glass border-b">
+    <nav className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-300 ${isLanding ? 'bg-transparent' : 'glass border-b'}`}>
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <Link to={user ? "/dashboard" : "/"} className="flex items-center gap-2">
-          <img src={destinationIcon} alt="Wander Together" className="h-8 w-8" />
-          <span className="font-display text-xl font-bold text-foreground">Wander Together</span>
+          <img src={destinationIcon} alt="Travel Buddy" className="h-8 w-8" />
+          <span className={`font-display text-xl font-bold ${isLanding ? 'text-white' : 'text-foreground'}`}>Travel Buddy</span>
         </Link>
 
         {/* Desktop */}
         <div className="hidden md:flex items-center gap-6">
           {!user ? (
             <>
-              {isLanding && (
-                <>
-                  <a href="#features" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Features</a>
-                  <a href="#how-it-works" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">How It Works</a>
-                  <a href="#testimonials" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Testimonials</a>
-                </>
-              )}
-              <Link to="/login"><Button variant="hero-outline" size="sm">Login</Button></Link>
-              <Link to="/signup"><Button variant="hero" size="sm">Get Started</Button></Link>
+              <Link to="/login"><Button variant="ghost" size="sm" className={isLanding ? 'text-white border border-white/30 hover:bg-white/10 hover:text-white' : ''}>Login</Button></Link>
+              <Link to="/signup"><Button size="sm" className={isLanding ? 'bg-white text-black hover:bg-white/90' : ''}>Get Started</Button></Link>
             </>
           ) : (
             <>
@@ -61,14 +54,14 @@ const Navbar = () => {
         </div>
 
         {/* Mobile toggle */}
-        <button className="md:hidden text-foreground" onClick={() => setOpen(!open)}>
+        <button className={`md:hidden ${isLanding ? 'text-white' : 'text-foreground'}`} onClick={() => setOpen(!open)}>
           {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </button>
       </div>
 
       {/* Mobile menu */}
       {open && (
-        <div className="md:hidden glass border-t p-4 space-y-3">
+        <div className={`md:hidden border-t p-4 space-y-3 ${isLanding ? 'bg-black/80 backdrop-blur-lg border-white/10' : 'glass'}`}>
           {!user ? (
             <>
               {isLanding && (

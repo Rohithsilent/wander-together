@@ -39,7 +39,7 @@ export interface GroupData {
   isPrivate: boolean;
   image?: string;
   coverImage?: string;
-  places?: Array<{ name: string; lat: number; lng: number }>;
+  places?: Array<{ id: string; name: string; lat: number; lng: number }>;
   createdBy: string;
   createdByName: string;
   createdAt: ReturnType<typeof serverTimestamp>;
@@ -81,6 +81,13 @@ export const getGroup = async (groupId: string) => {
 
 export const deleteGroup = async (groupId: string) => {
   await deleteDoc(doc(db, "groups", groupId));
+};
+
+export const updateGroupPlaces = async (
+  groupId: string,
+  places: Array<{ id: string; name: string; lat: number; lng: number }>
+) => {
+  await updateDoc(doc(db, "groups", groupId), { places });
 };
 
 // ==================== GROUP MEMBERS ====================

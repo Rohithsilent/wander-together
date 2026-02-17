@@ -17,12 +17,18 @@ export default function MultiLocationPicker({ places, onChange }: MultiLocationP
   const [showDropdown, setShowDropdown] = useState(false);
   const { results, isLoading } = useLocationSearch(query);
 
-  const addPlace = (place: Place) => {
+  const addPlace = (result: { name: string; lat: number; lng: number }) => {
     const isDuplicate = places.some(
-      (p) => Math.abs(p.lat - place.lat) < 0.0001 && Math.abs(p.lng - place.lng) < 0.0001
+      (p) => Math.abs(p.lat - result.lat) < 0.0001 && Math.abs(p.lng - result.lng) < 0.0001
     );
     if (isDuplicate) return;
-    onChange([...places, place]);
+    const newPlace: Place = {
+      id: crypto.randomUUID(),
+      name: result.name,
+      lat: result.lat,
+      lng: result.lng,
+    };
+    onChange([...places, newPlace]);
     setQuery("");
     setShowDropdown(false);
   };

@@ -2,24 +2,55 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Leaflet numbered markers */
+/* Leaflet Google-style pin markers */
 .numbered-marker {
+  background: transparent;
+  border: none;
+}
+
+.numbered-marker .pin {
+  position: relative;
+  width: 30px;
+  height: 42px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.numbered-marker .pin-head {
+  width: 30px;
+  height: 30px;
+  border-radius: 50% 50% 50% 0;
   background: hsl(180 93% 32%);
-  border-radius: 50%;
+  transform: rotate(-45deg);
+  border: 2.5px solid white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid white;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
 }
-.numbered-marker span {
+
+.numbered-marker .pin-number {
+  transform: rotate(45deg);
   color: white;
   font-size: 12px;
   font-weight: 700;
   line-height: 1;
+  text-align: center;
 }
 
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap');
+.numbered-marker .pin-shadow {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 14px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@300;400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap');
 
 @layer base {
   :root {
@@ -119,7 +150,12 @@
     font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
   }
 }
@@ -128,20 +164,63 @@
   .gradient-primary {
     background: var(--gradient-primary);
   }
+
   .gradient-accent {
     background: var(--gradient-accent);
   }
+
   .gradient-hero {
     background: var(--gradient-hero);
   }
+
   .shadow-card {
     box-shadow: var(--shadow-card);
   }
+
   .shadow-elevated {
     box-shadow: var(--shadow-elevated);
   }
+
   .glass {
     backdrop-filter: blur(12px);
     background: hsl(var(--background) / 0.8);
   }
+}
+
+/* ── Cinematic Landing Styles ── */
+
+.glass-nav {
+  @apply bg-black/20 backdrop-blur-lg border-b border-white/10;
+}
+
+.hero-text {
+  font-size: clamp(2rem, 8vw, 7rem);
+  font-weight: 200;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  text-transform: uppercase;
+  color: white;
+  text-shadow: 0 2px 40px rgba(0, 0, 0, 0.3);
+}
+
+/* Hide scrollbar for cinematic feel */
+.cinematic-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.cinematic-scroll {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Drag-and-drop reorder feedback */
+.drag-item {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.drag-item:active {
+  transform: scale(1.02);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  z-index: 10;
+  opacity: 0.9;
 }

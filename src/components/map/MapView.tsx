@@ -6,9 +6,9 @@ import "leaflet/dist/leaflet.css";
 function createNumberedIcon(index: number) {
   return L.divIcon({
     className: "numbered-marker",
-    html: `<span>${index + 1}</span>`,
-    iconSize: [28, 28],
-    iconAnchor: [14, 14],
+    html: `<div class="pin"><div class="pin-head"><span class="pin-number">${index + 1}</span></div><div class="pin-shadow"></div></div>`,
+    iconSize: [30, 42],
+    iconAnchor: [15, 42],
   });
 }
 
@@ -46,15 +46,28 @@ export default function MapView({ places, height = "400px" }: MapViewProps) {
     const map = mapRef.current;
     if (!map) return;
 
-    // Clear existing markers
+    // Clear existing markers & polylines
     map.eachLayer((layer) => {
-      if (layer instanceof L.Marker) map.removeLayer(layer);
+      if (layer instanceof L.Marker || layer instanceof L.Polyline) {
+        map.removeLayer(layer);
+      }
     });
 
-    // Add new markers
+    // Add markers
     places.forEach((place, i) => {
       L.marker([place.lat, place.lng], { icon: createNumberedIcon(i) }).addTo(map);
     });
+
+    // Draw route polyline
+    if (places.length > 1) {
+      const latlngs = places.map((p) => [p.lat, p.lng] as L.LatLngExpression);
+      L.polyline(latlngs, {
+        color: "hsl(180, 93%, 32%)",
+        weight: 3,
+        opacity: 0.8,
+        dashArray: "8, 6",
+      }).addTo(map);
+    }
 
     // Fit bounds
     if (places.length === 1) {

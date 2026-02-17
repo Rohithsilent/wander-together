@@ -80,7 +80,7 @@ const AIAssistant = () => {
                 <Bot className="h-6 w-6 text-primary-foreground" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-foreground">Wander Together AI</h1>
+                <h1 className="text-2xl font-bold text-foreground">Travel Buddy AI</h1>
                 <p className="text-sm text-muted-foreground">Your personal travel planning companion</p>
               </div>
             </div>

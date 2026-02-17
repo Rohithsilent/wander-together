@@ -15,7 +15,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { useState, useRef, useEffect, lazy, Suspense } from "react";
+import { useState, useRef, useEffect, useCallback, lazy, Suspense } from "react";
 import { uploadImageToCloudinary, validateImageFile } from "@/services/cloudinaryService";
 
 const ItineraryMap = lazy(() => import("@/components/map/ItineraryMap"));
@@ -38,6 +38,7 @@ import {
   approveJoinRequest,
   rejectJoinRequest,
   deleteGroup,
+  updateGroupPlaces,
 } from "@/services/firestore";
 
 const GroupDetail = () => {
@@ -61,6 +62,10 @@ const GroupDetail = () => {
 
   const isAdmin = members.some((m) => m.userId === user?.uid && m.role === "admin");
   const isMember = members.some((m) => m.userId === user?.uid);
+
+  const handlePlacesChange = useCallback((updatedPlaces: any[]) => {
+    setGroup((prev: any) => prev ? { ...prev, places: updatedPlaces } : prev);
+  }, []);
 
   useEffect(() => {
     if (!id) return;
@@ -337,11 +342,14 @@ const GroupDetail = () => {
 
             {/* Details */}
             <TabsContent value="details" className="space-y-6">
-              {group.places?.length > 0 && (
-                <Suspense fallback={null}>
-                  <ItineraryMap places={group.places} />
-                </Suspense>
-              )}
+              <Suspense fallback={null}>
+                <ItineraryMap
+                  groupId={id!}
+                  places={group.places || []}
+                  isMember={isMember}
+                  onPlacesChange={handlePlacesChange}
+                />
+              </Suspense>
               <div className="bg-card rounded-2xl border shadow-card p-6">
                 <h3 className="font-bold text-foreground mb-3">About this trip</h3>
                 <p className="text-muted-foreground">{group.description || "No description provided."}</p>
