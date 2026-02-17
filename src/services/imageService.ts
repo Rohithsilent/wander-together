@@ -1,4 +1,4 @@
-const UNSPLASH_ACCESS_KEY = import.meta.env.VITE_UNSPLASH_ACCESS_KEY;
+const UNSPLASH_ACCESS_KEY = "B3VojkL-WAwdHLbXF1IG5bgSPmBft1JUnOZYqUMfXPw";
 const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800&h=400&fit=crop";
 
 export const fetchDestinationImage = async (query: string): Promise<string> => {
