@@ -1,10 +1,10 @@
 import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Send, Bot, User, Trash2, Loader2 } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
+import { Textarea } from "@/components/ui/textarea";
+import { Send, Loader2, Trash2, Bot, Sparkles, Plane, DollarSign, MapPin, Backpack } from "lucide-react";
+import { useState } from "react";
 import { sendMessageToGemini } from "@/services/gemini";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 import ReactMarkdown from "react-markdown";
 
 interface Message {
@@ -14,127 +14,217 @@ interface Message {
 }
 
 const AIAssistant = () => {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: "assistant",
-      content: "Hello! I'm your AI travel assistant. Ask me about destinations, packing tips, budget planning, or anything travel-related! ✈️",
-      timestamp: new Date(),
-    },
-  ]);
+  const { toast } = useToast();
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const chatEndRef = useRef<HTMLDivElement>(null);
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  const sendMessage = async (messageText?: string) => {
+    const text = messageText || input.trim();
+    if (!text || loading) return;
 
-  const sendMessage = async () => {
-    if (!input.trim() || isLoading) return;
-
-    const userMsg: Message = { role: "user", content: input, timestamp: new Date() };
-    setMessages(prev => [...prev, userMsg]);
+    const userMsg: Message = {
+      role: "user",
+      content: text,
+      timestamp: new Date(),
+    };
+    setMessages((prev) => [...prev, userMsg]);
     setInput("");
-    setIsLoading(true);
+    setLoading(true);
 
     try {
-      const history = messages.filter(m => m.content !== "Hello! I'm your AI travel assistant. Ask me about destinations, packing tips, budget planning, or anything travel-related! ✈️");
-      const aiResponse = await sendMessageToGemini(input, history.map(m => ({ role: m.role, content: m.content })));
+      const conversationHistory = messages.map((msg) => ({
+        role: msg.role,
+        content: msg.content,
+      }));
+      const aiResponse = await sendMessageToGemini(text, conversationHistory);
       const aiMsg: Message = {
         role: "assistant",
         content: aiResponse,
         timestamp: new Date(),
       };
-      setMessages(prev => [...prev, aiMsg]);
+      setMessages((prev) => [...prev, aiMsg]);
     } catch (error: any) {
-      toast.error(error.message || "Failed to get AI response");
-      setMessages(prev => [...prev, { role: "assistant", content: "Sorry, I encountered an error. Please try again. 🙁", timestamp: new Date() }]);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to send message. Please try again.",
+        variant: "destructive",
+      });
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
   const clearChat = () => {
-    setMessages([{
-      role: "assistant",
-      content: "Chat cleared! How can I help you with your travel plans? ✈️",
-      timestamp: new Date(),
-    }]);
+    setMessages([]);
+    toast({ title: "Chat Cleared", description: "Your conversation history has been cleared." });
   };
 
+  const suggestedPrompts = [
+    { icon: Plane, text: "Help me plan a 7-day trip to Japan", category: "Trip Planning" },
+    { icon: DollarSign, text: "What's a good budget for Thailand?", category: "Budgeting" },
+    { icon: MapPin, text: "Suggest hidden gems in Europe", category: "Destinations" },
+    { icon: Backpack, text: "Essential packing list for hiking", category: "Packing" },
+  ];
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
-      <main className="pt-16 h-screen flex flex-col">
-        <div className="container mx-auto px-4 flex-1 flex flex-col max-w-3xl py-6">
+
+      <main className="flex-1 pt-20 pb-6">
+        <div className="container mx-auto px-4 h-full max-w-4xl flex flex-col">
           {/* Header */}
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl gradient-primary flex items-center justify-center">
-                <Bot className="h-5 w-5 text-primary-foreground" />
+          <div className="mb-6">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="h-12 w-12 rounded-2xl gradient-primary flex items-center justify-center">
+                <Bot className="h-6 w-6 text-primary-foreground" />
               </div>
               <div>
-                <h1 className="text-lg font-bold text-foreground">AI Travel Assistant</h1>
-                <p className="text-xs text-muted-foreground">Powered by Gemini AI</p>
+                <h1 className="text-2xl font-bold text-foreground">Wander Together AI</h1>
+                <p className="text-sm text-muted-foreground">Your personal travel planning companion</p>
               </div>
             </div>
-            <Button variant="ghost" size="sm" onClick={clearChat}>
-              <Trash2 className="h-4 w-4 mr-1" /> Clear
-            </Button>
           </div>
 
-          {/* Chat Area */}
-          <div className="flex-1 bg-card rounded-2xl border shadow-card overflow-hidden flex flex-col">
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {messages.map((msg, i) => (
-                <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                  <div className={`flex gap-2.5 max-w-[80%] ${msg.role === "user" ? "flex-row-reverse" : ""}`}>
-                    <div className={`h-8 w-8 rounded-lg flex items-center justify-center shrink-0 ${msg.role === "user" ? "bg-secondary" : "gradient-primary"}`}>
-                      {msg.role === "user" ? <User className="h-4 w-4 text-secondary-foreground" /> : <Bot className="h-4 w-4 text-primary-foreground" />}
-                    </div>
-                    <div className={`rounded-2xl px-4 py-3 ${msg.role === "user" ? "gradient-primary text-primary-foreground rounded-tr-md" : "bg-muted text-foreground rounded-tl-md"}`}>
-                      {msg.role === "user" ? (
-                        <p className="text-sm leading-relaxed">{msg.content}</p>
-                      ) : (
-                        <div className="text-sm leading-relaxed prose prose-sm max-w-none prose-headings:mt-3 prose-headings:mb-2 prose-p:my-1.5 prose-ul:my-1.5 prose-ol:my-1.5 prose-li:my-0.5">
-                          <ReactMarkdown>{msg.content}</ReactMarkdown>
-                        </div>
-                      )}
-                      <p className={`text-[10px] mt-1.5 ${msg.role === "user" ? "text-primary-foreground/50" : "text-muted-foreground"}`}>
-                        {msg.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                      </p>
-                    </div>
+          {/* Messages Container */}
+          <div className="flex-1 mb-4 overflow-hidden rounded-2xl border bg-card shadow-card">
+            <div className="h-full overflow-y-auto p-6 space-y-4">
+              {messages.length === 0 ? (
+                <div className="h-full flex flex-col items-center justify-center text-center px-4">
+                  <div className="h-20 w-20 rounded-3xl gradient-primary flex items-center justify-center mb-6">
+                    <Sparkles className="h-10 w-10 text-primary-foreground" />
                   </div>
-                </div>
-              ))}
-              {isLoading && (
-                <div className="flex gap-2.5">
-                  <div className="h-8 w-8 rounded-lg gradient-primary flex items-center justify-center">
-                    <Bot className="h-4 w-4 text-primary-foreground" />
-                  </div>
-                  <div className="bg-muted rounded-2xl rounded-tl-md px-4 py-3">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Loader2 className="h-4 w-4 animate-spin" /> Thinking...
-                    </div>
-                  </div>
-                </div>
-              )}
-              <div ref={chatEndRef} />
-            </div>
+                  <h2 className="text-2xl font-bold text-foreground mb-3">How can I help you today?</h2>
+                  <p className="text-muted-foreground mb-8 max-w-md">
+                    Ask me anything about travel planning, destinations, budgets, itineraries, or packing tips!
+                  </p>
 
-            <div className="border-t p-3 flex gap-2">
-              <Input
-                placeholder="Ask me about travel destinations, packing tips, budgets..."
-                value={input}
-                onChange={e => setInput(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && sendMessage()}
-                className="flex-1"
-                disabled={isLoading}
-              />
-              <Button variant="hero" size="icon" onClick={sendMessage} disabled={isLoading}>
-                <Send className="h-4 w-4" />
-              </Button>
+                  {/* Suggested Prompts */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-2xl">
+                    {suggestedPrompts.map((prompt, idx) => {
+                      const Icon = prompt.icon;
+                      return (
+                        <button
+                          key={idx}
+                          onClick={() => sendMessage(prompt.text)}
+                          className="group bg-background hover:bg-accent border-2 border-border hover:border-primary rounded-xl p-4 text-left transition-all hover:shadow-md"
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
+                              <Icon className="h-5 w-5 text-primary" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs text-muted-foreground mb-1">{prompt.category}</p>
+                              <p className="text-sm font-medium text-foreground line-clamp-2">{prompt.text}</p>
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : (
+                <>
+                  {messages.map((msg, idx) => (
+                    <div
+                      key={idx}
+                      className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} animate-in fade-in slide-in-from-bottom-2 duration-300`}
+                    >
+                      <div className={`max-w-[85%] ${msg.role === "user" ? "order-2" : "order-1"}`}>
+                        {msg.role === "assistant" && (
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="h-6 w-6 rounded-lg gradient-primary flex items-center justify-center">
+                              <Bot className="h-3.5 w-3.5 text-primary-foreground" />
+                            </div>
+                            <span className="text-xs font-medium text-muted-foreground">Wander AI</span>
+                          </div>
+                        )}
+                        <div
+                          className={`rounded-2xl px-4 py-3 ${msg.role === "user"
+                            ? "gradient-primary text-primary-foreground rounded-tr-md"
+                            : "bg-muted text-foreground rounded-tl-md shadow-sm"
+                            }`}
+                        >
+                          {msg.role === "user" ? (
+                            <p className="text-sm leading-relaxed">{msg.content}</p>
+                          ) : (
+                            <div className="text-sm leading-relaxed prose prose-sm max-w-none prose-headings:mt-3 prose-headings:mb-2 prose-p:my-1.5 prose-ul:my-1.5 prose-ol:my-1.5 prose-li:my-0.5 dark:prose-invert">
+                              <ReactMarkdown>{msg.content}</ReactMarkdown>
+                            </div>
+                          )}
+                          <p
+                            className={`text-[10px] mt-1.5 ${msg.role === "user" ? "text-primary-foreground/60" : "text-muted-foreground/60"
+                              }`}
+                          >
+                            {msg.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {loading && (
+                    <div className="flex justify-start animate-in fade-in slide-in-from-bottom-2 duration-300">
+                      <div className="max-w-[85%]">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="h-6 w-6 rounded-lg gradient-primary flex items-center justify-center">
+                            <Bot className="h-3.5 w-3.5 text-primary-foreground" />
+                          </div>
+                          <span className="text-xs font-medium text-muted-foreground">Wander AI</span>
+                        </div>
+                        <div className="bg-muted rounded-2xl rounded-tl-md px-4 py-3 shadow-sm">
+                          <div className="flex items-center gap-2">
+                            <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                            <span className="text-sm text-muted-foreground">Thinking...</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
+          </div>
+
+          {/* Input Area */}
+          <div className="bg-card border rounded-2xl shadow-card p-4">
+            <div className="flex gap-3">
+              <Textarea
+                placeholder="Ask me anything about travel..."
+                className="flex-1 min-h-[60px] max-h-32 resize-none rounded-xl border-2 focus:border-primary"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                  }
+                }}
+                disabled={loading}
+              />
+              <div className="flex flex-col gap-2">
+                <Button
+                  onClick={() => sendMessage()}
+                  disabled={!input.trim() || loading}
+                  variant="hero"
+                  size="icon"
+                  className="h-12 w-12 rounded-xl"
+                >
+                  {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
+                </Button>
+                {messages.length > 0 && (
+                  <Button
+                    onClick={clearChat}
+                    disabled={loading}
+                    variant="outline"
+                    size="icon"
+                    className="h-12 w-12 rounded-xl"
+                  >
+                    <Trash2 className="h-5 w-5" />
+                  </Button>
+                )}
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">Press <kbd className="px-1.5 py-0.5 rounded bg-muted border">Enter</kbd> to send, <kbd className="px-1.5 py-0.5 rounded bg-muted border">Shift + Enter</kbd> for new line</p>
           </div>
         </div>
       </main>

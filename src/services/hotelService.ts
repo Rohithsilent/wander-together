@@ -10,12 +10,14 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { fetchDestinationImage } from "@/services/imageService";
 
 export interface Hotel {
   id: string;
   name: string;
   lat: number;
   lng: number;
+  image?: string;
 }
 
 export interface HotelVote {
@@ -45,7 +47,7 @@ export const fetchNearbyHotels = async (lat: number, lng: number): Promise<Hotel
 
   const data = await res.json();
 
-  return (data.elements || [])
+  const hotels = (data.elements || [])
     .filter((el: any) => el.tags?.name)
     .map((el: any) => ({
       id: String(el.id),
@@ -53,6 +55,23 @@ export const fetchNearbyHotels = async (lat: number, lng: number): Promise<Hotel
       lat: el.lat,
       lng: el.lon,
     }));
+
+  // Fetch images for each hotel from Unsplash
+  console.log('🏨 Fetching images for', hotels.length, 'hotels');
+  const hotelsWithImages = await Promise.all(
+    hotels.map(async (hotel: Hotel) => {
+      try {
+        const image = await fetchDestinationImage(`${hotel.name} hotel`);
+        return { ...hotel, image };
+      } catch (error) {
+        console.error(`Failed to fetch image for ${hotel.name}:`, error);
+        return hotel; // Return hotel without image if fetch fails
+      }
+    })
+  );
+
+  console.log('✅ Hotels with images:', hotelsWithImages.length);
+  return hotelsWithImages;
 };
 
 // ==================== HOTEL VOTES ====================
@@ -115,7 +134,7 @@ export const calcDistanceKm = (
   const a =
     Math.sin(dLat / 2) ** 2 +
     Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLng / 2) ** 2;
+    Math.cos((lat2 * Math.PI) / 180) *
+    Math.sin(dLng / 2) ** 2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 };

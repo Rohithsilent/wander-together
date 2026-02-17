@@ -40,7 +40,7 @@ const steps = [
 ];
 
 const testimonials = [
-  { name: "Sarah M.", location: "Bali, Indonesia", text: "TravelMate helped me find the perfect group for my Bali trip. Made lifelong friends!", rating: 5 },
+  { name: "Sarah M.", location: "Bali, Indonesia", text: "Wander Together helped me find the perfect group for my Bali trip. Made lifelong friends!", rating: 5 },
   { name: "James K.", location: "Swiss Alps", text: "The expense splitting feature saved us so many headaches. Everything was fair and transparent.", rating: 5 },
   { name: "Priya D.", location: "Japan", text: "As a solo traveler, this platform gave me the confidence to explore Japan with amazing people.", rating: 5 },
 ];
@@ -106,7 +106,7 @@ const Index = () => {
               Everything You Need to <span className="text-primary">Travel Together</span>
             </h2>
             <p className="text-muted-foreground max-w-xl mx-auto">
-              From finding companions to splitting the bill, TravelMate has you covered.
+              From finding companions to splitting the bill, Wander Together has you covered.
             </p>
           </motion.div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -215,7 +215,7 @@ const Index = () => {
             Ready for Your Next Adventure?
           </h2>
           <p className="text-primary-foreground/80 mb-8 max-w-lg mx-auto">
-            Join thousands of travelers finding their perfect companions on TravelMate.
+            Join thousands of travelers finding their perfect companions on Wander Together.
           </p>
           <Link to="/signup">
             <Button variant="accent" size="lg" className="text-base px-10">

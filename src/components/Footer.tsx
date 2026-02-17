@@ -1,4 +1,4 @@
-import { Compass } from "lucide-react";
+import destinationIcon from "@/assets/destination.svg";
 import { Link } from "react-router-dom";
 
 const Footer = () => (
@@ -7,10 +7,8 @@ const Footer = () => (
       <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <div className="gradient-primary rounded-lg p-1.5">
-              <Compass className="h-4 w-4 text-primary-foreground" />
-            </div>
-            <span className="font-display text-lg font-bold">TravelMate</span>
+            <img src={destinationIcon} alt="Wander Together" className="h-7 w-7" />
+            <span className="font-display text-lg font-bold">Wander Together</span>
           </div>
           <p className="text-sm text-muted-foreground">Find your perfect travel companion and explore the world together.</p>
         </div>
@@ -39,7 +37,7 @@ const Footer = () => (
         </div>
       </div>
       <div className="border-t mt-8 pt-8 text-center text-sm text-muted-foreground">
-        © {new Date().getFullYear()} TravelMate. All rights reserved.
+        © {new Date().getFullYear()} Wander Together. All rights reserved.
       </div>
     </div>
   </footer>

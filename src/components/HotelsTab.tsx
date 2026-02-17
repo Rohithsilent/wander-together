@@ -121,21 +121,44 @@ const HotelsTab = ({ groupId, userId, places, destination, isMember }: HotelsTab
     ? sortedHotels[0].id
     : null;
 
+  // Get top hotel data (including image)
+  const topHotel = topHotelId ? sortedHotels.find(h => h.id === topHotelId) : null;
+
   return (
     <div className="space-y-6">
       {/* Selected Hotel Banner */}
-      {topHotelId && (
-        <div className="bg-primary/10 border border-primary/20 rounded-2xl p-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Trophy className="h-5 w-5 text-primary" />
-            <div>
-              <p className="text-xs font-medium text-muted-foreground">Group Selected Hotel</p>
-              <p className="font-bold text-foreground">{votes[topHotelId]?.hotelName}</p>
+      {topHotelId && topHotel && (
+        <div className="bg-primary/10 border border-primary/20 rounded-2xl overflow-hidden">
+          <div className="flex items-center">
+            {/* Hotel Image */}
+            <div className="w-24 h-24 shrink-0 relative">
+              {topHotel.image ? (
+                <img
+                  src={topHotel.image}
+                  alt={topHotel.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-muted flex items-center justify-center">
+                  <Hotel className="h-8 w-8 text-muted-foreground" />
+                </div>
+              )}
+              <div className="absolute top-2 left-2 bg-primary text-primary-foreground rounded-full p-1.5">
+                <Trophy className="h-3.5 w-3.5" />
+              </div>
+            </div>
+
+            {/* Hotel Info */}
+            <div className="flex-1 p-4 flex items-center justify-between">
+              <div>
+                <p className="text-xs font-medium text-muted-foreground">Group Selected Hotel</p>
+                <p className="font-bold text-foreground">{votes[topHotelId]?.hotelName}</p>
+              </div>
+              <Badge className="bg-primary text-primary-foreground">
+                {votes[topHotelId]?.votes?.length} vote{votes[topHotelId]?.votes?.length !== 1 ? "s" : ""}
+              </Badge>
             </div>
           </div>
-          <Badge className="bg-primary text-primary-foreground">
-            {votes[topHotelId]?.votes?.length} vote{votes[topHotelId]?.votes?.length !== 1 ? "s" : ""}
-          </Badge>
         </div>
       )}
 
@@ -187,41 +210,64 @@ const HotelsTab = ({ groupId, userId, places, destination, isMember }: HotelsTab
             return (
               <div
                 key={hotel.id}
-                className={`bg-card rounded-xl border shadow-card p-4 flex items-center justify-between transition-all ${
-                  isTop ? "ring-2 ring-primary border-primary/30" : ""
-                }`}
+                className={`bg-card rounded-xl border shadow-card overflow-hidden transition-all ${isTop ? "ring-2 ring-primary border-primary/30" : ""
+                  }`}
               >
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    {isTop && <Trophy className="h-4 w-4 text-primary shrink-0" />}
-                    <p className="font-semibold text-foreground truncate">{hotel.name}</p>
+                <div className="flex">
+                  {/* Hotel Image */}
+                  <div className="w-32 h-32 shrink-0 relative overflow-hidden">
+                    {hotel.image ? (
+                      <img
+                        src={hotel.image}
+                        alt={hotel.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-muted flex items-center justify-center">
+                        <Hotel className="h-8 w-8 text-muted-foreground" />
+                      </div>
+                    )}
+                    {isTop && (
+                      <div className="absolute top-2 left-2 bg-primary text-primary-foreground rounded-full p-1.5">
+                        <Trophy className="h-3 w-3" />
+                      </div>
+                    )}
                   </div>
-                  {dist !== null && (
-                    <p className="text-xs text-muted-foreground mt-0.5">{dist.toFixed(1)} km away</p>
-                  )}
-                </div>
-                <div className="flex items-center gap-2 shrink-0 ml-3">
-                  {voteCount > 0 && (
-                    <Badge variant={isTop ? "default" : "secondary"} className="text-xs">
-                      {voteCount}
-                    </Badge>
-                  )}
-                  {isMember && (
-                    <Button
-                      size="sm"
-                      variant={hasVoted ? "default" : "outline"}
-                      onClick={() => handleVote(hotel)}
-                      disabled={votingId === hotel.id}
-                      className="gap-1"
-                    >
-                      {votingId === hotel.id ? (
-                        <Loader2 className="h-3 w-3 animate-spin" />
-                      ) : (
-                        <ThumbsUp className="h-3 w-3" />
+
+                  {/* Hotel Info */}
+                  <div className="flex-1 p-4 flex items-center justify-between min-w-0">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="font-semibold text-foreground truncate">{hotel.name}</p>
+                      </div>
+                      {dist !== null && (
+                        <p className="text-xs text-muted-foreground mt-0.5">{dist.toFixed(1)} km away</p>
                       )}
-                      {hasVoted ? "Voted" : "Vote"}
-                    </Button>
-                  )}
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0 ml-3">
+                      {voteCount > 0 && (
+                        <Badge variant={isTop ? "default" : "secondary"} className="text-xs">
+                          {voteCount}
+                        </Badge>
+                      )}
+                      {isMember && (
+                        <Button
+                          size="sm"
+                          variant={hasVoted ? "default" : "outline"}
+                          onClick={() => handleVote(hotel)}
+                          disabled={votingId === hotel.id}
+                          className="gap-1"
+                        >
+                          {votingId === hotel.id ? (
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                          ) : (
+                            <ThumbsUp className="h-3 w-3" />
+                          )}
+                          {hasVoted ? "Voted" : "Vote"}
+                        </Button>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
             );

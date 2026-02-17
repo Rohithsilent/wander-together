@@ -13,11 +13,11 @@ export const sendMessageToGemini = async (
   const contents: GeminiMessage[] = [
     {
       role: "user",
-      parts: [{ text: "You are a helpful AI travel assistant called TravelMate AI. You help users with trip suggestions, packing recommendations, destination details, travel tips, budget planning advice, and anything travel-related. Be friendly, concise, and informative. Use emojis occasionally to keep the conversation engaging." }],
+      parts: [{ text: "You are a helpful AI travel assistant called Wander Together AI. You help users with trip suggestions, packing recommendations, destination details, travel tips, budget planning advice, and anything travel-related. Be friendly, concise, and informative. Use emojis occasionally to keep the conversation engaging." }],
     },
     {
       role: "model",
-      parts: [{ text: "Understood! I'm TravelMate AI, your friendly travel assistant. I'm ready to help with destinations, packing tips, budgets, and more! ✈️" }],
+      parts: [{ text: "Understood! I'm Wander Together AI, your friendly travel assistant. I'm ready to help with destinations, packing tips, budgets, and more! ✈️" }],
     },
     ...conversationHistory.map((msg) => ({
       role: (msg.role === "assistant" ? "model" : "user") as "user" | "model",

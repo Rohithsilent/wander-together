@@ -1,6 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Compass, Sun, Moon } from "lucide-react";
+import { Menu, X, Sun, Moon } from "lucide-react";
+import destinationIcon from "@/assets/destination.svg";
 import { useTheme } from "@/components/ThemeProvider";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -28,10 +29,8 @@ const Navbar = () => {
     <nav className="fixed top-0 left-0 right-0 z-50 glass border-b">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <Link to={user ? "/dashboard" : "/"} className="flex items-center gap-2">
-          <div className="gradient-primary rounded-lg p-1.5">
-            <Compass className="h-5 w-5 text-primary-foreground" />
-          </div>
-          <span className="font-display text-xl font-bold text-foreground">TravelMate</span>
+          <img src={destinationIcon} alt="Wander Together" className="h-8 w-8" />
+          <span className="font-display text-xl font-bold text-foreground">Wander Together</span>
         </Link>
 
         {/* Desktop */}
