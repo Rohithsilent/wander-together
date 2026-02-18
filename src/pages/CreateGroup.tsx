@@ -10,10 +10,12 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { createGroup } from "@/services/firestore";
 import { fetchDestinationImage } from "@/services/imageService";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import type { Place } from "@/types/itinerary";
 import MultiLocationPicker from "@/components/map/MultiLocationPicker";
 import { motion } from "framer-motion";
+import { uploadImageToCloudinary, validateImageFile } from "@/services/cloudinaryService";
+import { Image as ImageIcon, Loader2, X } from "lucide-react";
 
 const CreateGroup = () => {
   const navigate = useNavigate();
@@ -21,6 +23,9 @@ const CreateGroup = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [places, setPlaces] = useState<Place[]>([]);
+  const [coverImage, setCoverImage] = useState<string | null>(null);
+  const [uploadingCover, setUploadingCover] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null); // Verify import of useRef
   const [form, setForm] = useState({
     destination: "",
     startDate: "",
@@ -46,13 +51,18 @@ const CreateGroup = () => {
       console.log('📍 Places:', places);
       console.log('🌍 Destination:', form.destination);
 
-      const coverImage = await fetchDestinationImage(imageQuery);
-      console.log('🎨 Fetched cover image:', coverImage);
+      console.log('🌍 Destination:', form.destination);
+
+      let finalCoverImage = coverImage;
+      if (!finalCoverImage) {
+        finalCoverImage = await fetchDestinationImage(imageQuery);
+      }
+      console.log('🎨 Final cover image:', finalCoverImage);
 
       const groupId = await createGroup({
         destination: form.destination,
         places,
-        coverImage,
+        coverImage: finalCoverImage,
         startDate: form.startDate,
         endDate: form.endDate,
         budget: form.budget,
@@ -129,6 +139,73 @@ const CreateGroup = () => {
                   required
                   className="glass-themed-subtle text-themed-primary placeholder:text-themed-quaternary h-12 rounded-xl border-themed focus:glass-themed transition-all"
                 />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-themed-tertiary text-xs uppercase tracking-[0.2em] font-light">Cover Image</Label>
+              <div className="glass-themed-subtle rounded-xl p-4 border-themed">
+                {!coverImage ? (
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm text-themed-secondary font-light">
+                      <span className="block mb-1">Auto-generated from Unsplash</span>
+                      <span className="text-xs text-themed-tertiary">Based on your destination settings.</span>
+                    </div>
+                    <div>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        ref={fileInputRef}
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          const error = validateImageFile(file, 5);
+                          if (error) {
+                            toast({ title: "Invalid File", description: error, variant: "destructive" });
+                            return;
+                          }
+                          setUploadingCover(true);
+                          try {
+                            const url = await uploadImageToCloudinary(file, "group_covers");
+                            setCoverImage(url);
+                            toast({ title: "Cover Uploaded", description: "Custom cover image set." });
+                          } catch (err: any) {
+                            toast({ title: "Upload Failed", description: err.message, variant: "destructive" });
+                          } finally {
+                            setUploadingCover(false);
+                          }
+                        }}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={uploadingCover}
+                        onClick={() => fileInputRef.current?.click()}
+                        className="border-themed text-themed-primary hover:glass-themed-strong"
+                      >
+                        {uploadingCover ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <ImageIcon className="h-4 w-4 mr-2" />}
+                        Upload Custom
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="relative h-48 rounded-lg overflow-hidden group">
+                    <img src={coverImage} alt="Cover Preview" className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => setCoverImage(null)}
+                        className="rounded-full"
+                      >
+                        <X className="h-4 w-4 mr-2" /> Remove Custom Image
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 

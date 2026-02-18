@@ -1,4 +1,5 @@
 import Navbar from "@/components/Navbar";
+import FloatingAI from "@/components/ai/FloatingAI";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Link } from "react-router-dom";
@@ -273,6 +274,7 @@ const Dashboard = () => {
           )}
         </div>
       </main>
+      <FloatingAI />
     </motion.div>
   );
 };

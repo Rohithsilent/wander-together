@@ -1,9 +1,10 @@
 import Navbar from "@/components/Navbar";
+import FloatingAI from "@/components/ai/FloatingAI";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { MapPin, Calendar, DollarSign, Users, Send, Plus, MessageCircle, Receipt, Loader2, UserMinus, Check, X, Trash2, ImageIcon, Hotel } from "lucide-react";
+import { MapPin, Calendar, DollarSign, Users, Send, Plus, MessageCircle, Receipt, Loader2, UserMinus, Check, X, Trash2, ImageIcon, Hotel, Camera } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -39,6 +40,7 @@ import {
   rejectJoinRequest,
   deleteGroup,
   updateGroupPlaces,
+  updateGroup,
 } from "@/services/firestore";
 
 const GroupDetail = () => {
@@ -57,8 +59,10 @@ const GroupDetail = () => {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [expenseForm, setExpenseForm] = useState({ description: "", amount: "" });
   const [showExpenseForm, setShowExpenseForm] = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const chatImageInputRef = useRef<HTMLInputElement>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
 
   const isAdmin = members.some((m) => m.userId === user?.uid && m.role === "admin");
   const isMember = members.some((m) => m.userId === user?.uid);
@@ -133,6 +137,28 @@ const GroupDetail = () => {
       toast({ title: "Upload Failed", description: err.message, variant: "destructive" });
     } finally {
       setUploadingImage(false);
+    }
+  };
+
+
+
+  const handleUpdateCover = async (file: File) => {
+    if (!user || !id) return;
+    const error = validateImageFile(file, 5);
+    if (error) {
+      toast({ title: "Invalid File", description: error, variant: "destructive" });
+      return;
+    }
+    setUploadingCover(true);
+    try {
+      const url = await uploadImageToCloudinary(file, "group_covers");
+      await updateGroup(id, { coverImage: url });
+      setGroup((prev: any) => ({ ...prev, coverImage: url })); // Optimistic update
+      toast({ title: "Cover Updated", description: "Group cover image has been updated." });
+    } catch (err: any) {
+      toast({ title: "Upload Failed", description: err.message, variant: "destructive" });
+    } finally {
+      setUploadingCover(false);
     }
   };
 
@@ -311,6 +337,32 @@ const GroupDetail = () => {
               )}
             </div>
           </div>
+
+          {/* Cover Image Edit Button (Admin Only) */}
+          {isAdmin && (
+            <div className="absolute top-4 right-4 z-20">
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                ref={coverInputRef}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleUpdateCover(file);
+                  e.target.value = "";
+                }}
+              />
+              <Button
+                size="icon"
+                variant="secondary"
+                className="rounded-full bg-black/50 hover:bg-black/70 text-white border-none shadow-lg backdrop-blur-sm"
+                disabled={uploadingCover}
+                onClick={() => coverInputRef.current?.click()}
+              >
+                {uploadingCover ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
+              </Button>
+            </div>
+          )}
         </div>
 
         <div className="container mx-auto px-4 py-8">
@@ -542,17 +594,18 @@ const GroupDetail = () => {
             </TabsContent>
           </Tabs>
         </div>
-      </main>
+      </main >
 
       {/* Image Preview Modal */}
-      <Dialog open={!!previewImage} onOpenChange={() => setPreviewImage(null)}>
+      < Dialog open={!!previewImage} onOpenChange={() => setPreviewImage(null)}>
         <DialogContent className="max-w-3xl p-2 bg-background/95">
           {previewImage && (
             <img src={previewImage} alt="Preview" className="w-full h-auto rounded-lg" />
           )}
         </DialogContent>
-      </Dialog>
-    </div>
+      </Dialog >
+      <FloatingAI />
+    </div >
   );
 };
 

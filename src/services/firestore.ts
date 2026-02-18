@@ -83,6 +83,11 @@ export const deleteGroup = async (groupId: string) => {
   await deleteDoc(doc(db, "groups", groupId));
 };
 
+// Update any group field
+export const updateGroup = async (groupId: string, data: Partial<GroupData>) => {
+  await updateDoc(doc(db, "groups", groupId), { ...data });
+};
+
 export const updateGroupPlaces = async (
   groupId: string,
   places: Array<{ id: string; name: string; lat: number; lng: number }>
