@@ -213,7 +213,7 @@ const CreateGroup = () => {
               <div className="space-y-2">
                 <Label className="text-themed-tertiary text-xs uppercase tracking-[0.2em] font-light">Budget Range</Label>
                 <Input
-                  placeholder="e.g., $1,500 - $2,500"
+                  placeholder="e.g., ₹1,500 - ₹2,500"
                   value={form.budget}
                   onChange={e => setForm({ ...form, budget: e.target.value })}
                   required

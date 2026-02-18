@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { MapPin, Calendar, DollarSign, Users, Send, Plus, MessageCircle, Receipt, Loader2, UserMinus, Check, X, Trash2, ImageIcon, Hotel, Camera } from "lucide-react";
+import { MapPin, Calendar, IndianRupee, Users, Send, Plus, MessageCircle, Receipt, Loader2, UserMinus, Check, X, Trash2, ImageIcon, Hotel, Camera } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -370,7 +370,7 @@ const GroupDetail = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             {[
               { icon: Calendar, label: "Dates", value: `${group.startDate} — ${group.endDate}` },
-              { icon: DollarSign, label: "Budget", value: group.budget },
+              { icon: IndianRupee, label: "Budget", value: group.budget },
               { icon: Users, label: "Members", value: `${members.length}/${group.maxMembers}` },
               { icon: MapPin, label: "Type", value: group.travelType },
             ].map(item => (
@@ -521,11 +521,11 @@ const GroupDetail = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="bg-card rounded-xl border shadow-card p-5 text-center">
                   <p className="text-sm text-muted-foreground">Total Expenses</p>
-                  <p className="text-2xl font-bold text-foreground">${totalExpenses.toFixed(2)}</p>
+                  <p className="text-2xl font-bold text-foreground">₹{totalExpenses.toFixed(2)}</p>
                 </div>
                 <div className="bg-card rounded-xl border shadow-card p-5 text-center">
                   <p className="text-sm text-muted-foreground">Per Person</p>
-                  <p className="text-2xl font-bold text-primary">${perPerson.toFixed(2)}</p>
+                  <p className="text-2xl font-bold text-primary">₹{perPerson.toFixed(2)}</p>
                 </div>
                 <div className="bg-card rounded-xl border shadow-card p-5 text-center">
                   <p className="text-sm text-muted-foreground">Members</p>
@@ -559,7 +559,7 @@ const GroupDetail = () => {
                         <p className="font-medium text-foreground">{exp.description}</p>
                         <p className="text-sm text-muted-foreground">Paid by {exp.paidByName}</p>
                       </div>
-                      <span className="font-bold text-foreground">${(exp.amount || 0).toFixed(2)}</span>
+                      <span className="font-bold text-foreground">₹{(exp.amount || 0).toFixed(2)}</span>
                     </div>
                   ))}
                 </div>
@@ -572,7 +572,7 @@ const GroupDetail = () => {
                     {balances.map((b, i) => (
                       <div key={i} className="flex items-center justify-between py-2 border-b last:border-0">
                         <p className="text-sm text-foreground"><span className="font-semibold">{b.from}</span> <span className="text-muted-foreground">owes</span> <span className="font-semibold">{b.to}</span></p>
-                        <span className="font-bold text-primary">${b.amount.toFixed(2)}</span>
+                        <span className="font-bold text-primary">₹{b.amount.toFixed(2)}</span>
                       </div>
                     ))}
                   </div>

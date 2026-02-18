@@ -3,7 +3,7 @@ import FloatingAI from "@/components/ai/FloatingAI";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Link } from "react-router-dom";
-import { Search, Plus, MapPin, Calendar, DollarSign, Users, Loader2, Sparkles } from "lucide-react";
+import { Search, Plus, MapPin, Calendar, IndianRupee, Users, Loader2, Sparkles } from "lucide-react";
 import { useState, useEffect } from "react";
 import { getGroups, getGroupMembers } from "@/services/firestore";
 import { useAuth } from "@/contexts/AuthContext";
@@ -255,7 +255,7 @@ const Dashboard = () => {
                         </div>
                         {group.budget && (
                           <div className="flex items-center gap-1 text-sm font-medium text-themed-primary">
-                            <DollarSign className="h-4 w-4" />
+                            <IndianRupee className="h-4 w-4" />
                             <span>{group.budget}</span>
                           </div>
                         )}
