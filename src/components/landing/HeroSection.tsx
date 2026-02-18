@@ -99,7 +99,7 @@ const HeroSection = () => {
                         </motion.div>
 
                         {/* Centered "Start Journey" button */}
-                        <motion.div
+                        {/* <motion.div
                             className="absolute left-1/2 -translate-x-1/2 bottom-0 hidden md:flex flex-col items-center gap-2 pointer-events-auto"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
@@ -110,7 +110,7 @@ const HeroSection = () => {
                                     Start Journey
                                 </button>
                             </Link>
-                        </motion.div>
+                        </motion.div> */}
 
                         <motion.div
                             className="flex items-center gap-3 text-white/60"
