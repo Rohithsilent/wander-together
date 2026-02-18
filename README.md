@@ -1,6 +1,6 @@
-# Wander Together 🌍✈️
+# Travel Buddy 🌍✈️
 
-Wander Together is a modern, feature-rich group travel planning application designed to make organizing trips with friends seamless and enjoyable. From collaborative itinerary planning to real-time expense tracking and an AI-powered travel assistant, Wander Together has everything you need to explore the world together.
+Travel Buddy is a modern, feature-rich group travel planning application designed to make organizing trips with friends seamless and enjoyable. From collaborative itinerary planning to real-time expense tracking and an AI-powered travel assistant, Travel Buddy has everything you need to explore the world together.
 
 ## 🚀 Features
 
