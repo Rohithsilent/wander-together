@@ -47,17 +47,24 @@ export const fetchNearbyHotels = async (lat: number, lng: number): Promise<Hotel
 
   const data = await res.json();
 
+  interface OverpassElement {
+    id: number;
+    lat: number;
+    lon: number;
+    tags?: { name?: string };
+  }
+
   const hotels = (data.elements || [])
-    .filter((el: any) => el.tags?.name)
-    .map((el: any) => ({
+    .filter((el: OverpassElement) => el.tags?.name)
+    .map((el: OverpassElement) => ({
       id: String(el.id),
-      name: el.tags.name,
+      name: el.tags!.name!,
       lat: el.lat,
       lng: el.lon,
     }));
 
   // Fetch images for each hotel from Unsplash
-  console.log('🏨 Fetching images for', hotels.length, 'hotels');
+  // Fetch images for each hotel from Unsplash
   const hotelsWithImages = await Promise.all(
     hotels.map(async (hotel: Hotel) => {
       try {
@@ -70,7 +77,6 @@ export const fetchNearbyHotels = async (lat: number, lng: number): Promise<Hotel
     })
   );
 
-  console.log('✅ Hotels with images:', hotelsWithImages.length);
   return hotelsWithImages;
 };
 

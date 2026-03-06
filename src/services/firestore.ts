@@ -16,6 +16,7 @@ import {
   limit,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { Message, Expense } from "@/types";
 
 // ==================== USERS ====================
 export const getUserProfile = async (uid: string) => {
@@ -167,7 +168,7 @@ export const sendChatMessage = async (
 
 export const subscribeToChatMessages = (
   groupId: string,
-  callback: (messages: Array<Record<string, unknown>>) => void
+  callback: (messages: Message[]) => void
 ) => {
   const q = query(
     collection(db, "groups", groupId, "messages"),
@@ -175,7 +176,7 @@ export const subscribeToChatMessages = (
     limit(100)
   );
   return onSnapshot(q, (snapshot) => {
-    const messages = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+    const messages = snapshot.docs.map((d) => ({ id: d.id, ...d.data() } as Message));
     callback(messages);
   });
 };
@@ -206,11 +207,11 @@ export const getExpenses = async (groupId: string) => {
 
 export const subscribeToExpenses = (
   groupId: string,
-  callback: (expenses: Array<Record<string, unknown>>) => void
+  callback: (expenses: Expense[]) => void
 ) => {
   const q = query(collection(db, "groups", groupId, "expenses"), orderBy("createdAt", "desc"));
   return onSnapshot(q, (snapshot) => {
-    const expenses = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+    const expenses = snapshot.docs.map((d) => ({ id: d.id, ...d.data() } as Expense));
     callback(expenses);
   });
 };

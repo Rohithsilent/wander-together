@@ -8,7 +8,8 @@ import { useState, useEffect } from "react";
 import { getGroups, getGroupMembers } from "@/services/firestore";
 import { useAuth } from "@/contexts/AuthContext";
 import { Badge } from "@/components/ui/badge";
-import { motion } from "framer-motion";
+import { Group } from "@/types";
+import { motion, AnimatePresence } from "framer-motion";
 import welcomeBg from "@/assets/download.jpg";
 
 const fallbackImages = [
@@ -25,7 +26,7 @@ interface GroupWithMembers {
   destination: string;
   startDate: string;
   endDate: string;
-  budget: string;
+  budget: string | number;
   travelType: string;
   maxMembers: number;
   description: string;
@@ -45,7 +46,7 @@ const Dashboard = () => {
       try {
         const rawGroups = await getGroups();
         const groupsWithMembers = await Promise.all(
-          rawGroups.map(async (g: any, i: number) => {
+          rawGroups.map(async (g: Group, i: number) => {
             const members = await getGroupMembers(g.id);
             return {
               id: g.id,
@@ -181,97 +182,109 @@ const Dashboard = () => {
           </motion.div>
 
           {/* Groups Grid */}
-          {loading ? (
-            <div className="flex justify-center items-center py-20">
-              <Loader2 className="h-10 w-10 animate-spin text-themed-tertiary" />
-            </div>
-          ) : filtered.length === 0 ? (
-            <motion.div
-              className="glass-themed rounded-3xl p-12 text-center"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5 }}
-            >
-              <MapPin className="h-12 w-12 mx-auto text-themed-quaternary mb-3" />
-              <h3 className="text-xl font-light text-themed-primary mb-2">No groups found</h3>
-              <p className="text-themed-tertiary mb-6 font-light">
-                {search || filterType ? "Try adjusting your filters" : "Be the first to create a travel group!"}
-              </p>
-              <Link to="/create-group">
-                <Button className="border border-themed rounded-full glass-themed hover:glass-themed-strong text-themed-primary transition-all duration-300 hover:scale-105">
-                  Create Group
-                </Button>
-              </Link>
-            </motion.div>
-          ) : (
-            <motion.div
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.5 }}
-            >
-              {filtered.map((group, index) => (
-                <motion.div
-                  key={group.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.6 + index * 0.1 }}
-                >
-                  <Link
-                    to={`/group/${group.id}`}
-                    className="group block glass-themed rounded-3xl overflow-hidden hover:glass-themed-strong transition-all duration-300 hover:scale-[1.02]"
+          <AnimatePresence mode="wait">
+            {loading ? (
+              <motion.div
+                key="loading"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="flex justify-center items-center py-20"
+              >
+                <Loader2 className="h-10 w-10 animate-spin text-themed-tertiary" />
+              </motion.div>
+            ) : filtered.length === 0 ? (
+              <motion.div
+                key="empty"
+                className="glass-themed rounded-3xl p-12 text-center"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.5 }}
+              >
+                <MapPin className="h-12 w-12 mx-auto text-themed-quaternary mb-3" />
+                <h3 className="text-xl font-light text-themed-primary mb-2">No groups found</h3>
+                <p className="text-themed-tertiary mb-6 font-light">
+                  {search || filterType ? "Try adjusting your filters" : "Be the first to create a travel group!"}
+                </p>
+                <Link to="/create-group">
+                  <Button className="border border-themed rounded-full glass-themed hover:glass-themed-strong text-themed-primary transition-all duration-300 hover:scale-105">
+                    Create Group
+                  </Button>
+                </Link>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="grid"
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+              >
+                {filtered.map((group, index) => (
+                  <motion.div
+                    key={group.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.6 + index * 0.1 }}
                   >
-                    {/* Group Image */}
-                    <div className="relative h-56 overflow-hidden">
-                      <img
-                        src={group.image}
-                        alt={group.destination}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+                    <Link
+                      to={`/group/${group.id}`}
+                      className="group block glass-themed rounded-3xl overflow-hidden hover:glass-themed-strong transition-all duration-300 hover:scale-[1.02]"
+                    >
+                      {/* Group Image */}
+                      <div className="relative h-56 overflow-hidden">
+                        <img
+                          src={group.image}
+                          alt={group.destination}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
 
-                      {/* Travel Type Badge */}
-                      <Badge className="absolute top-4 right-4 glass-themed-subtle border border-themed text-white capitalize shadow-lg backdrop-blur-sm">
-                        {group.travelType}
-                      </Badge>
+                        {/* Travel Type Badge */}
+                        <Badge className="absolute top-4 right-4 glass-themed-subtle border border-themed text-white capitalize shadow-lg backdrop-blur-sm">
+                          {group.travelType}
+                        </Badge>
 
-                      {/* Destination Overlay */}
-                      <div className="absolute bottom-4 left-4 right-4">
-                        <h3 className="text-2xl font-light text-white mb-1">{group.destination}</h3>
-                      </div>
-                    </div>
-
-                    {/* Group Info */}
-                    <div className="p-5 space-y-3">
-                      <div className="flex items-center gap-2 text-sm text-themed-tertiary">
-                        <Calendar className="h-4 w-4 shrink-0" />
-                        <span className="truncate font-light">{group.startDate} — {group.endDate}</span>
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2 text-sm text-themed-tertiary">
-                          <Users className="h-4 w-4 shrink-0" />
-                          <span className="font-light">{group.memberCount}/{group.maxMembers} members</span>
+                        {/* Destination Overlay */}
+                        <div className="absolute bottom-4 left-4 right-4">
+                          <h3 className="text-2xl font-light text-white mb-1">{group.destination}</h3>
                         </div>
-                        {group.budget && (
-                          <div className="flex items-center gap-1 text-sm font-medium text-themed-primary">
-                            <IndianRupee className="h-4 w-4" />
-                            <span>{group.budget}</span>
+                      </div>
+
+                      {/* Group Info */}
+                      <div className="p-5 space-y-3">
+                        <div className="flex items-center gap-2 text-sm text-themed-tertiary">
+                          <Calendar className="h-4 w-4 shrink-0" />
+                          <span className="truncate font-light">{group.startDate} — {group.endDate}</span>
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 text-sm text-themed-tertiary">
+                            <Users className="h-4 w-4 shrink-0" />
+                            <span className="font-light">{group.memberCount}/{group.maxMembers} members</span>
                           </div>
+                          {group.budget && (
+                            <div className="flex items-center gap-1 text-sm font-medium text-themed-primary">
+                              <IndianRupee className="h-4 w-4" />
+                              <span>{group.budget}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {group.description && (
+                          <p className="text-sm text-themed-quaternary line-clamp-2 font-light">
+                            {group.description}
+                          </p>
                         )}
                       </div>
-
-                      {group.description && (
-                        <p className="text-sm text-themed-quaternary line-clamp-2 font-light">
-                          {group.description}
-                        </p>
-                      )}
-                    </div>
-                  </Link>
-                </motion.div>
-              ))}
-            </motion.div>
-          )}
+                    </Link>
+                  </motion.div>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </main>
       <FloatingAI />

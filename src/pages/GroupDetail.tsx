@@ -42,17 +42,19 @@ import {
   updateGroupPlaces,
   updateGroup,
 } from "@/services/firestore";
+import { Group, Member, Message, Expense, JoinRequest } from "@/types";
+import type { Place } from "@/types/itinerary";
 
 const GroupDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
-  const [group, setGroup] = useState<any>(null);
-  const [members, setMembers] = useState<any[]>([]);
-  const [messages, setMessages] = useState<any[]>([]);
-  const [expenses, setExpenses] = useState<any[]>([]);
-  const [joinRequests, setJoinRequests] = useState<any[]>([]);
+  const [group, setGroup] = useState<Group | null>(null);
+  const [members, setMembers] = useState<Member[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [joinRequests, setJoinRequests] = useState<JoinRequest[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -67,8 +69,8 @@ const GroupDetail = () => {
   const isAdmin = members.some((m) => m.userId === user?.uid && m.role === "admin");
   const isMember = members.some((m) => m.userId === user?.uid);
 
-  const handlePlacesChange = useCallback((updatedPlaces: any[]) => {
-    setGroup((prev: any) => prev ? { ...prev, places: updatedPlaces } : prev);
+  const handlePlacesChange = useCallback((updatedPlaces: Place[]) => {
+    setGroup((prev) => prev ? { ...prev, places: updatedPlaces } : prev);
   }, []);
 
   useEffect(() => {
@@ -79,11 +81,13 @@ const GroupDetail = () => {
           getGroup(id),
           getGroupMembers(id),
         ]);
-        setGroup(groupData);
-        setMembers(membersData);
-        if (isAdmin) {
+        setGroup(groupData as Group);
+        setMembers(membersData as Member[]);
+        // Recalculate isAdmin based on the newly fetched membersData
+        const currentIsAdmin = membersData.some((m: Member) => m.userId === user?.uid && m.role === "admin");
+        if (currentIsAdmin) {
           const requests = await getJoinRequests(id);
-          setJoinRequests(requests);
+          setJoinRequests(requests as JoinRequest[]);
         }
       } catch (error) {
         console.error("Error loading group:", error);
@@ -153,7 +157,7 @@ const GroupDetail = () => {
     try {
       const url = await uploadImageToCloudinary(file, "group_covers");
       await updateGroup(id, { coverImage: url });
-      setGroup((prev: any) => ({ ...prev, coverImage: url })); // Optimistic update
+      setGroup((prev) => prev ? { ...prev, coverImage: url } : prev); // Optimistic update
       toast({ title: "Cover Updated", description: "Group cover image has been updated." });
     } catch (err: any) {
       toast({ title: "Upload Failed", description: err.message, variant: "destructive" });
@@ -171,7 +175,7 @@ const GroupDetail = () => {
       } else {
         await joinGroup(id, user.uid, user.displayName || "Anonymous");
         const updatedMembers = await getGroupMembers(id);
-        setMembers(updatedMembers);
+        setMembers(updatedMembers as Member[]);
         toast({ title: "Joined!", description: "You have joined the group." });
       }
     } catch (error: any) {
@@ -184,7 +188,7 @@ const GroupDetail = () => {
     try {
       await leaveGroup(id, user.uid);
       const updatedMembers = await getGroupMembers(id);
-      setMembers(updatedMembers);
+      setMembers(updatedMembers as Member[]);
       toast({ title: "Left Group", description: "You have left the group." });
     } catch (error: any) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -196,20 +200,20 @@ const GroupDetail = () => {
     try {
       await removeMember(id, userId);
       const updatedMembers = await getGroupMembers(id);
-      setMembers(updatedMembers);
+      setMembers(updatedMembers as Member[]);
       toast({ title: "Member Removed" });
     } catch (error: any) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     }
   };
 
-  const handleApproveRequest = async (req: any) => {
+  const handleApproveRequest = async (req: JoinRequest) => {
     if (!id) return;
     try {
       await approveJoinRequest(req.id, id, req.userId, req.userName);
       setJoinRequests((prev) => prev.filter((r) => r.id !== req.id));
       const updatedMembers = await getGroupMembers(id);
-      setMembers(updatedMembers);
+      setMembers(updatedMembers as Member[]);
       toast({ title: "Request Approved" });
     } catch (error: any) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -261,15 +265,15 @@ const GroupDetail = () => {
     );
   }
 
-  const totalExpenses = expenses.reduce((s: number, e: any) => s + (e.amount || 0), 0);
+  const totalExpenses = expenses.reduce((s: number, e: Expense) => s + (e.amount || 0), 0);
   const perPerson = members.length > 0 ? totalExpenses / members.length : 0;
 
   // Who owes whom calculation
   const balances: { from: string; to: string; amount: number }[] = [];
   if (members.length > 0 && expenses.length > 0) {
     const paid: Record<string, number> = {};
-    members.forEach((m: any) => { paid[m.userName] = 0; });
-    expenses.forEach((e: any) => { paid[e.paidByName] = (paid[e.paidByName] || 0) + (e.amount || 0); });
+    members.forEach((m: Member) => { paid[m.userName] = 0; });
+    expenses.forEach((e: Expense) => { paid[e.paidByName] = (paid[e.paidByName] || 0) + (e.amount || 0); });
     const netBalance = Object.entries(paid).map(([name, amount]) => ({ name, net: amount - perPerson }));
     const debtors = netBalance.filter(b => b.net < 0).map(b => ({ ...b }));
     const creditors = netBalance.filter(b => b.net > 0).map(b => ({ ...b }));
@@ -412,7 +416,7 @@ const GroupDetail = () => {
                 <div className="bg-card rounded-2xl border shadow-card p-6">
                   <h3 className="font-bold text-foreground mb-4">Join Requests</h3>
                   <div className="space-y-3">
-                    {joinRequests.map((req: any) => (
+                    {joinRequests.map((req: JoinRequest) => (
                       <div key={req.id} className="flex items-center justify-between">
                         <span className="font-medium text-foreground">{req.userName}</span>
                         <div className="flex gap-2">
@@ -428,7 +432,7 @@ const GroupDetail = () => {
               <div className="bg-card rounded-2xl border shadow-card p-6">
                 <h3 className="font-bold text-foreground mb-4">Members</h3>
                 <div className="space-y-3">
-                  {members.map((m: any) => (
+                  {members.map((m: Member) => (
                     <div key={m.id} className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="h-9 w-9 rounded-full gradient-primary flex items-center justify-center text-sm font-bold text-primary-foreground">{(m.userName || "?")[0]}</div>
@@ -453,7 +457,7 @@ const GroupDetail = () => {
                   {messages.length === 0 && (
                     <p className="text-center text-muted-foreground py-10">No messages yet. Start the conversation!</p>
                   )}
-                  {messages.map((msg: any, i: number) => {
+                  {messages.map((msg: Message, i: number) => {
                     const isOwn = msg.userId === user?.uid;
                     const isImage = msg.type === "image";
                     return (
@@ -553,7 +557,7 @@ const GroupDetail = () => {
 
                 <div className="space-y-3">
                   {expenses.length === 0 && <p className="text-muted-foreground text-sm">No expenses recorded yet.</p>}
-                  {expenses.map((exp: any) => (
+                  {expenses.map((exp: Expense) => (
                     <div key={exp.id} className="flex items-center justify-between py-3 border-b last:border-0">
                       <div>
                         <p className="font-medium text-foreground">{exp.description}</p>

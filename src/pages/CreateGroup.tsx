@@ -47,17 +47,11 @@ const CreateGroup = () => {
     setLoading(true);
     try {
       const imageQuery = places.length > 0 ? places[0].name : form.destination;
-      console.log('🔍 Image query:', imageQuery);
-      console.log('📍 Places:', places);
-      console.log('🌍 Destination:', form.destination);
-
-      console.log('🌍 Destination:', form.destination);
 
       let finalCoverImage = coverImage;
       if (!finalCoverImage) {
         finalCoverImage = await fetchDestinationImage(imageQuery);
       }
-      console.log('🎨 Final cover image:', finalCoverImage);
 
       const groupId = await createGroup({
         destination: form.destination,
@@ -73,7 +67,6 @@ const CreateGroup = () => {
         createdBy: user.uid,
         createdByName: user.displayName || "Anonymous",
       });
-      console.log('✅ Group created with ID:', groupId);
       toast({ title: "Group Created!", description: "Your travel group has been created successfully." });
       navigate(`/group/${groupId}`);
     } catch (error: any) {

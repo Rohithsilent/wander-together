@@ -12,7 +12,8 @@ import { getUserProfile, updateUserProfile, getUserGroups, getGroupMembers } fro
 import { Link } from "react-router-dom";
 import { uploadImageToCloudinary, validateImageFile } from "@/services/cloudinaryService";
 import { Badge } from "@/components/ui/badge";
-import { motion } from "framer-motion";
+import { Group } from "@/types";
+import { motion, AnimatePresence } from "framer-motion";
 import coverBg from "@/assets/moto.jpg";
 
 const Profile = () => {
@@ -57,7 +58,7 @@ const Profile = () => {
         }
 
         const groupsWithMembers = await Promise.all(
-          groups.map(async (g: any) => {
+          groups.map(async (g: Group) => {
             try {
               const members = await getGroupMembers(g.id);
               return { ...g, memberCount: members.length };
@@ -92,7 +93,7 @@ const Profile = () => {
   };
 
   const totalTrips = joinedGroups.length;
-  const uniqueDestinations = new Set(joinedGroups.map((g: any) => g.destination)).size;
+  const uniqueDestinations = new Set(joinedGroups.map((g: Group) => g.destination)).size;
 
   if (loading) {
     return (
@@ -209,110 +210,113 @@ const Profile = () => {
         </motion.div>
 
         {/* Edit Profile Form (Collapsible) */}
-        {showEditForm && (
-          <motion.div
-            className="w-full px-6 lg:px-10 mb-8"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-          >
-            <form onSubmit={handleSave} className="glass-themed rounded-3xl p-6 lg:p-8">
-              <h2 className="text-xl font-light text-themed-primary mb-6">Edit Profile</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-themed-tertiary text-xs uppercase tracking-[0.2em] font-light">Full Name</Label>
-                  <Input
-                    value={profile.name}
-                    onChange={e => setProfile({ ...profile, name: e.target.value })}
-                    className="glass-themed-subtle text-themed-primary placeholder:text-themed-quaternary h-12 rounded-xl border-themed focus:glass-themed mb-2"
-                  />
+        <AnimatePresence>
+          {showEditForm && (
+            <motion.div
+              className="w-full px-6 lg:px-10 mb-8"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20, transition: { duration: 0.2 } }}
+              transition={{ duration: 0.4 }}
+            >
+              <form onSubmit={handleSave} className="glass-themed rounded-3xl p-6 lg:p-8">
+                <h2 className="text-xl font-light text-themed-primary mb-6">Edit Profile</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-themed-tertiary text-xs uppercase tracking-[0.2em] font-light">Full Name</Label>
+                    <Input
+                      value={profile.name}
+                      onChange={e => setProfile({ ...profile, name: e.target.value })}
+                      className="glass-themed-subtle text-themed-primary placeholder:text-themed-quaternary h-12 rounded-xl border-themed focus:glass-themed mb-2"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-themed-tertiary text-xs uppercase tracking-[0.2em] font-light">Age</Label>
+                    <Input
+                      type="number"
+                      value={profile.age}
+                      onChange={e => setProfile({ ...profile, age: e.target.value })}
+                      className="glass-themed-subtle text-themed-primary placeholder:text-themed-quaternary h-12 rounded-xl border-themed focus:glass-themed mb-2"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-themed-tertiary text-xs uppercase tracking-[0.2em] font-light">Gender</Label>
+                    <Select value={profile.gender} onValueChange={v => setProfile({ ...profile, gender: v })}>
+                      <SelectTrigger className="glass-themed-subtle text-themed-primary h-12 rounded-xl border-themed">
+                        <SelectValue placeholder="Select gender" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-gray-900 border-white/20">
+                        <SelectItem value="Male">Male</SelectItem>
+                        <SelectItem value="Female">Female</SelectItem>
+                        <SelectItem value="Non-binary">Non-binary</SelectItem>
+                        <SelectItem value="Prefer not to say">Prefer not to say</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="md:col-span-2 lg:col-span-3 space-y-2">
+                    <Label className="text-themed-tertiary text-xs uppercase tracking-[0.2em] font-light">Bio</Label>
+                    <Textarea
+                      value={profile.bio}
+                      onChange={e => setProfile({ ...profile, bio: e.target.value })}
+                      rows={2}
+                      placeholder="Tell us about yourself..."
+                      className="glass-themed-subtle text-themed-primary placeholder:text-themed-quaternary rounded-xl border-themed focus:glass-themed transition-all"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-themed-tertiary text-xs uppercase tracking-[0.2em] font-light">Travel Type</Label>
+                    <Select value={profile.travelType} onValueChange={v => setProfile({ ...profile, travelType: v })}>
+                      <SelectTrigger className="glass-themed-subtle text-themed-primary h-12 rounded-xl border-themed">
+                        <SelectValue placeholder="Select type" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-gray-900 border-white/20">
+                        <SelectItem value="adventure">Adventure</SelectItem>
+                        <SelectItem value="leisure">Leisure</SelectItem>
+                        <SelectItem value="trekking">Trekking</SelectItem>
+                        <SelectItem value="business">Business</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-themed-tertiary text-xs uppercase tracking-[0.2em] font-light">Budget Range</Label>
+                    <Input
+                      value={profile.budget}
+                      onChange={e => setProfile({ ...profile, budget: e.target.value })}
+                      placeholder="e.g., $1000-$2000"
+                      className="glass-themed-subtle text-themed-primary placeholder:text-themed-quaternary h-12 rounded-xl border-themed focus:glass-themed transition-all"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-themed-tertiary text-xs uppercase tracking-[0.2em] font-light">Languages</Label>
+                    <Input
+                      value={profile.languages}
+                      onChange={e => setProfile({ ...profile, languages: e.target.value })}
+                      placeholder="e.g., English, Hindi"
+                      className="glass-themed-subtle text-themed-primary placeholder:text-themed-quaternary h-12 rounded-xl border-themed focus:glass-themed transition-all"
+                    />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label className="text-themed-tertiary text-xs uppercase tracking-[0.2em] font-light">Age</Label>
-                  <Input
-                    type="number"
-                    value={profile.age}
-                    onChange={e => setProfile({ ...profile, age: e.target.value })}
-                    className="glass-themed-subtle text-themed-primary placeholder:text-themed-quaternary h-12 rounded-xl border-themed focus:glass-themed mb-2"
-                  />
+                <div className="flex gap-3 mt-6">
+                  <Button
+                    type="submit"
+                    disabled={saving}
+                    className="border border-themed rounded-full glass-themed hover:glass-themed-strong text-themed-primary transition-all duration-300 hover:scale-105"
+                  >
+                    {saving ? "Saving..." : "Save Profile"}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowEditForm(false)}
+                    className="border border-themed rounded-full glass-themed hover:glass-themed-strong text-themed-primary transition-all duration-300"
+                  >
+                    Cancel
+                  </Button>
                 </div>
-                <div className="space-y-2">
-                  <Label className="text-themed-tertiary text-xs uppercase tracking-[0.2em] font-light">Gender</Label>
-                  <Select value={profile.gender} onValueChange={v => setProfile({ ...profile, gender: v })}>
-                    <SelectTrigger className="glass-themed-subtle text-themed-primary h-12 rounded-xl border-themed">
-                      <SelectValue placeholder="Select gender" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-gray-900 border-white/20">
-                      <SelectItem value="Male">Male</SelectItem>
-                      <SelectItem value="Female">Female</SelectItem>
-                      <SelectItem value="Non-binary">Non-binary</SelectItem>
-                      <SelectItem value="Prefer not to say">Prefer not to say</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="md:col-span-2 lg:col-span-3 space-y-2">
-                  <Label className="text-themed-tertiary text-xs uppercase tracking-[0.2em] font-light">Bio</Label>
-                  <Textarea
-                    value={profile.bio}
-                    onChange={e => setProfile({ ...profile, bio: e.target.value })}
-                    rows={2}
-                    placeholder="Tell us about yourself..."
-                    className="glass-themed-subtle text-themed-primary placeholder:text-themed-quaternary rounded-xl border-themed focus:glass-themed transition-all"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-themed-tertiary text-xs uppercase tracking-[0.2em] font-light">Travel Type</Label>
-                  <Select value={profile.travelType} onValueChange={v => setProfile({ ...profile, travelType: v })}>
-                    <SelectTrigger className="glass-themed-subtle text-themed-primary h-12 rounded-xl border-themed">
-                      <SelectValue placeholder="Select type" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-gray-900 border-white/20">
-                      <SelectItem value="adventure">Adventure</SelectItem>
-                      <SelectItem value="leisure">Leisure</SelectItem>
-                      <SelectItem value="trekking">Trekking</SelectItem>
-                      <SelectItem value="business">Business</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-themed-tertiary text-xs uppercase tracking-[0.2em] font-light">Budget Range</Label>
-                  <Input
-                    value={profile.budget}
-                    onChange={e => setProfile({ ...profile, budget: e.target.value })}
-                    placeholder="e.g., $1000-$2000"
-                    className="glass-themed-subtle text-themed-primary placeholder:text-themed-quaternary h-12 rounded-xl border-themed focus:glass-themed transition-all"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-themed-tertiary text-xs uppercase tracking-[0.2em] font-light">Languages</Label>
-                  <Input
-                    value={profile.languages}
-                    onChange={e => setProfile({ ...profile, languages: e.target.value })}
-                    placeholder="e.g., English, Hindi"
-                    className="glass-themed-subtle text-themed-primary placeholder:text-themed-quaternary h-12 rounded-xl border-themed focus:glass-themed transition-all"
-                  />
-                </div>
-              </div>
-              <div className="flex gap-3 mt-6">
-                <Button
-                  type="submit"
-                  disabled={saving}
-                  className="border border-themed rounded-full glass-themed hover:glass-themed-strong text-themed-primary transition-all duration-300 hover:scale-105"
-                >
-                  {saving ? "Saving..." : "Save Profile"}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setShowEditForm(false)}
-                  className="border border-themed rounded-full glass-themed hover:glass-themed-strong text-themed-primary transition-all duration-300"
-                >
-                  Cancel
-                </Button>
-              </div>
-            </form>
-          </motion.div>
-        )}
+              </form>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Joined Groups */}
         <motion.div
