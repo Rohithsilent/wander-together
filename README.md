@@ -17,7 +17,7 @@ Travel Buddy is a modern, feature-rich group travel planning application designe
 
 ### Landing Page
 Experience our immersive entry into the world of travel.
-![Landing Page](src/assets/landing1.png)
+![Landing Page](src/assets/landing.png)
 
 ![Landing Page Hero](src/assets/landing2.png)
 
@@ -76,3 +76,5 @@ Contributions are welcome! Whether it's reporting a bug, suggesting a feature, o
 ## 📄 License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+
+
