@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Send, Loader2, Trash2, Bot, Sparkles, Plane, DollarSign, MapPin, Backpack } from "lucide-react";
-import { useState } from "react";
+import { Send, Loader2, Trash2, Bot, Sparkles, Plane, DollarSign, MapPin, Backpack, Copy } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
 import { sendMessageToGemini } from "@/services/gemini";
 import { useToast } from "@/hooks/use-toast";
 import ReactMarkdown from "react-markdown";
@@ -24,6 +24,33 @@ const ChatInterface = ({ className = "", compact = false }: ChatInterfaceProps) 
     const [input, setInput] = useState("");
     const [loading, setLoading] = useState(false);
 
+    const messagesEndRef = useRef<HTMLDivElement>(null);
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
+
+    useEffect(() => {
+        scrollToBottom();
+    }, [messages, loading]);
+
+    useEffect(() => {
+        const observer = new MutationObserver(() => {
+            scrollToBottom();
+        });
+
+        if (messagesEndRef.current?.parentElement) {
+            observer.observe(messagesEndRef.current.parentElement, {
+                childList: true,
+                subtree: true,
+                characterData: true
+            });
+        }
+
+        return () => observer.disconnect();
+    }, []);
+
     const sendMessage = async (messageText?: string) => {
         const text = messageText || input.trim();
         if (!text || loading) return;
@@ -35,6 +62,9 @@ const ChatInterface = ({ className = "", compact = false }: ChatInterfaceProps) 
         };
         setMessages((prev) => [...prev, userMsg]);
         setInput("");
+        if (textareaRef.current) {
+            textareaRef.current.style.height = 'auto';
+        }
         setLoading(true);
 
         try {
@@ -73,30 +103,28 @@ const ChatInterface = ({ className = "", compact = false }: ChatInterfaceProps) 
     ];
 
     return (
-        <div className={`flex flex-col h-full ${className}`}>
-            {/* Header - Only show if NOT compact, or maybe show a smaller header */}
-            {!compact && (
-                <div className="mb-6">
-                    <div className="flex items-center gap-3 mb-2">
-                        <div className="h-12 w-12 rounded-2xl glass-themed-strong flex items-center justify-center">
-                            <Bot className="h-6 w-6 text-themed-primary" />
-                        </div>
-                        <div>
-                            <h1 className="text-2xl font-light text-themed-primary">Travel Buddy AI</h1>
-                            <p className="text-sm text-themed-tertiary">Your personal travel planning companion</p>
-                        </div>
-                    </div>
-                </div>
-            )}
-
+        <div className={`flex flex-col h-full relative ${className}`}>
             {/* Messages Container */}
             <motion.div
-                className={`flex-1 overflow-hidden rounded-3xl glass-themed ${compact ? 'mb-2' : 'mb-4'}`}
+                className={`flex-1 overflow-hidden w-full ${compact ? 'mb-2' : ''}`}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.3 }}
             >
-                <div className="h-full overflow-y-auto p-4 sm:p-6 space-y-4 custom-scrollbar">
+                <div className="h-full overflow-y-auto px-4 sm:px-6 pt-6 pb-40 space-y-6 dark-scrollbar">
+                    {!compact && (
+                        <div className="mb-6">
+                            <div className="flex items-center gap-3 mb-2">
+                                <div className="h-12 w-12 rounded-2xl glass-themed-strong flex items-center justify-center">
+                                    <Bot className="h-6 w-6 text-themed-primary" />
+                                </div>
+                                <div>
+                                    <h1 className="text-2xl font-light text-themed-primary">Travel Buddy AI</h1>
+                                    <p className="text-sm text-themed-tertiary">Your personal travel planning companion</p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                     {messages.length === 0 ? (
                         <div className="h-full flex flex-col items-center justify-center text-center px-4">
                             <div className={`rounded-3xl glass-themed-strong flex items-center justify-center mb-6 ${compact ? 'h-16 w-16' : 'h-20 w-20'}`}>
@@ -110,7 +138,7 @@ const ChatInterface = ({ className = "", compact = false }: ChatInterfaceProps) 
                             )}
 
                             {/* Suggested Prompts */}
-                            <div className={`grid grid-cols-1 ${compact ? '' : 'sm:grid-cols-2'} gap-3 w-full max-w-2xl`}>
+                            <div className={`grid grid-cols-1 ${compact ? '' : 'md:grid-cols-2'} gap-4 w-full max-w-2xl`}>
                                 {suggestedPrompts.slice(0, compact ? 2 : 4).map((prompt, idx) => {
                                     const Icon = prompt.icon;
                                     return (
@@ -148,25 +176,38 @@ const ChatInterface = ({ className = "", compact = false }: ChatInterfaceProps) 
                                         exit={{ opacity: 0, y: -20 }}
                                         transition={{ duration: 0.3 }}
                                     >
-                                        <div className={`max-w-[85%] ${msg.role === "user" ? "order-2" : "order-1"}`}>
+                                        <div className={`max-w-[85%] ${msg.role === "user" ? "order-2" : "order-1 min-w-[300px]"}`}>
                                             {msg.role === "assistant" && (
-                                                <div className="flex items-center gap-2 mb-2">
-                                                    <div className="h-6 w-6 rounded-lg glass-themed-strong flex items-center justify-center">
-                                                        <Bot className="h-3.5 w-3.5 text-themed-primary" />
+                                                <div className="flex items-center justify-between gap-2 mb-2">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="h-6 w-6 rounded-lg glass-themed-strong flex items-center justify-center">
+                                                            <Bot className="h-3.5 w-3.5 text-themed-primary" />
+                                                        </div>
+                                                        <span className="text-xs font-medium text-themed-tertiary">Wander AI</span>
                                                     </div>
-                                                    <span className="text-xs font-medium text-themed-tertiary">Wander AI</span>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-6 w-6 rounded-md hover:bg-white/10"
+                                                        onClick={() => {
+                                                            navigator.clipboard.writeText(msg.content);
+                                                            toast({ description: "Copied to clipboard!" });
+                                                        }}
+                                                    >
+                                                        <Copy className="h-3.5 w-3.5 text-themed-tertiary" />
+                                                    </Button>
                                                 </div>
                                             )}
                                             <div
                                                 className={`rounded-2xl px-4 py-3 ${msg.role === "user"
-                                                    ? "glass-themed-strong text-themed-primary rounded-tr-md"
+                                                    ? "bg-zinc-800/50 text-white rounded-tr-md"
                                                     : "glass-themed text-themed-primary rounded-tl-md"
                                                     }`}
                                             >
                                                 {msg.role === "user" ? (
                                                     <p className="text-sm leading-relaxed">{msg.content}</p>
                                                 ) : (
-                                                    <div className="text-sm leading-relaxed prose prose-sm max-w-none prose-headings:mt-3 prose-headings:mb-2 prose-p:my-1.5 prose-ul:my-1.5 prose-ol:my-1.5 prose-li:my-0.5 dark:prose-invert light:prose-slate">
+                                                    <div className="text-sm leading-[1.8] prose prose-sm prose-invert max-w-none space-y-4 prose-headings:font-bold prose-headings:text-white prose-p:my-2 prose-ul:list-disc prose-ul:pl-5 prose-ul:my-2 prose-ol:list-decimal prose-ol:pl-5 prose-ol:my-2 prose-li:my-1">
                                                         <ReactMarkdown>{msg.content}</ReactMarkdown>
                                                     </div>
                                                 )}
@@ -203,56 +244,65 @@ const ChatInterface = ({ className = "", compact = false }: ChatInterfaceProps) 
                             )}
                         </>
                     )}
+                    <div ref={messagesEndRef} />
                 </div>
             </motion.div>
 
             {/* Input Area */}
             <motion.div
-                className={`glass-themed rounded-3xl ${compact ? 'p-3' : 'p-4'}`}
+                className={`absolute bottom-0 left-0 right-0 z-10 pb-4 pt-12 pointer-events-none flex justify-center ${compact ? 'px-1' : 'px-2 sm:px-4'}`}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.4 }}
             >
-                <div className="flex gap-2 sm:gap-3">
-                    <Textarea
-                        placeholder="Ask anything..."
-                        className="flex-1 min-h-[50px] sm:min-h-[60px] max-h-32 resize-none rounded-xl glass-themed-subtle text-themed-primary placeholder:text-themed-quaternary focus:glass-themed-strong border-0 text-sm"
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        onKeyDown={(e) => {
-                            if (e.key === "Enter" && !e.shiftKey) {
-                                e.preventDefault();
-                                sendMessage();
-                            }
-                        }}
-                        disabled={loading}
-                    />
-                    <div className="flex flex-col gap-2">
+                <div className="w-full max-w-4xl pointer-events-auto backdrop-blur-xl bg-black/60 border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.5)] rounded-[2rem] p-2 sm:p-3">
+                    <div className="flex items-center gap-2 sm:gap-3">
+                        <Button
+                            onClick={clearChat}
+                            disabled={messages.length === 0 || loading}
+                            size="icon"
+                            className="h-10 w-10 sm:h-12 sm:w-12 shrink-0 rounded-2xl glass-themed hover:glass-themed-strong text-themed-primary transition-all border border-white/5 hover:border-white/10 disabled:opacity-30 disabled:pointer-events-none"
+                        >
+                            <Trash2 className="h-5 w-5" />
+                        </Button>
+
+                        <Textarea
+                            ref={textareaRef}
+                            placeholder="Ask anything..."
+                            className="flex-1 min-h-[50px] sm:min-h-[60px] max-h-32 resize-none rounded-2xl glass-themed-subtle text-themed-primary placeholder:text-themed-quaternary border-0 text-sm overflow-y-auto dark-scrollbar py-3 sm:py-4 px-4 focus-visible:ring-1 focus-visible:ring-zinc-500 focus-visible:ring-offset-0 transition-shadow"
+                            value={input}
+                            onChange={(e) => {
+                                setInput(e.target.value);
+                                e.target.style.height = 'auto';
+                                e.target.style.height = `${e.target.scrollHeight}px`;
+                            }}
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter" && !e.shiftKey) {
+                                    e.preventDefault();
+                                    sendMessage();
+                                }
+                            }}
+                            disabled={loading}
+                            rows={1}
+                        />
+
                         <Button
                             onClick={() => sendMessage()}
                             disabled={!input.trim() || loading}
                             size="icon"
-                            className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl glass-themed-strong hover:glass-themed text-themed-primary border-0"
+                            className="h-10 w-10 sm:h-12 sm:w-12 shrink-0 rounded-2xl glass-themed-strong hover:glass-themed text-themed-primary transition-all border border-white/10 hover:border-white/20"
                         >
                             {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
                         </Button>
-                        {messages.length > 0 && (
-                            <Button
-                                onClick={clearChat}
-                                disabled={loading}
-                                size="icon"
-                                className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl glass-themed hover:glass-themed-strong text-themed-primary border-themed"
-                            >
-                                <Trash2 className="h-5 w-5" />
-                            </Button>
-                        )}
                     </div>
+                    {!compact && (
+                        <div className="flex justify-center mt-2 pb-1 group">
+                            <p className="text-[10px] text-themed-quaternary hidden sm:block transition-colors group-hover:text-themed-tertiary">
+                                Press <kbd className="px-1.5 py-0.5 rounded glass-themed-subtle border border-white/10 mx-1">Enter</kbd> to send, <kbd className="px-1.5 py-0.5 rounded glass-themed-subtle border border-white/10 mx-1">Shift + Enter</kbd> for new line
+                            </p>
+                        </div>
+                    )}
                 </div>
-                {!compact && (
-                    <p className="text-xs text-themed-quaternary mt-2 hidden sm:block">
-                        Press <kbd className="px-1.5 py-0.5 rounded glass-themed-subtle border border-themed">Enter</kbd> to send, <kbd className="px-1.5 py-0.5 rounded glass-themed-subtle border border-themed">Shift + Enter</kbd> for new line
-                    </p>
-                )}
             </motion.div>
         </div>
     );
