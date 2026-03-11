@@ -207,7 +207,7 @@ const ChatInterface = ({ className = "", compact = false }: ChatInterfaceProps) 
                                                 {msg.role === "user" ? (
                                                     <p className="text-sm leading-relaxed">{msg.content}</p>
                                                 ) : (
-                                                    <div className="text-sm leading-[1.8] prose prose-sm prose-invert max-w-none space-y-4 prose-headings:font-bold prose-headings:text-white prose-p:my-2 prose-ul:list-disc prose-ul:pl-5 prose-ul:my-2 prose-ol:list-decimal prose-ol:pl-5 prose-ol:my-2 prose-li:my-1">
+                                                    <div className="text-sm leading-[1.8] text-zinc-800 dark:text-zinc-200 prose prose-sm dark:prose-invert max-w-none space-y-4 prose-headings:font-bold prose-headings:text-zinc-900 dark:prose-headings:text-white prose-p:my-2 prose-ul:list-disc prose-ul:pl-5 prose-ul:my-2 prose-ol:list-decimal prose-ol:pl-5 prose-ol:my-2 prose-li:my-1">
                                                         <ReactMarkdown>{msg.content}</ReactMarkdown>
                                                     </div>
                                                 )}
@@ -255,13 +255,13 @@ const ChatInterface = ({ className = "", compact = false }: ChatInterfaceProps) 
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.4 }}
             >
-                <div className="w-full max-w-4xl pointer-events-auto backdrop-blur-xl bg-black/60 border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.5)] rounded-[2rem] p-2 sm:p-3">
+                <div className="w-full max-w-4xl pointer-events-auto backdrop-blur-xl bg-zinc-100/80 border border-zinc-200 dark:bg-zinc-900/80 dark:border-zinc-800 shadow-[0_8px_32px_rgba(0,0,0,0.5)] rounded-[2rem] p-2 sm:p-3">
                     <div className="flex items-center gap-2 sm:gap-3">
                         <Button
                             onClick={clearChat}
                             disabled={messages.length === 0 || loading}
                             size="icon"
-                            className="h-10 w-10 sm:h-12 sm:w-12 shrink-0 rounded-2xl glass-themed hover:glass-themed-strong text-themed-primary transition-all border border-white/5 hover:border-white/10 disabled:opacity-30 disabled:pointer-events-none"
+                            className="h-10 w-10 sm:h-12 sm:w-12 shrink-0 rounded-2xl bg-zinc-200 hover:bg-zinc-300 text-zinc-700 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:text-zinc-300 transition-all border border-white/5 hover:border-white/10 disabled:opacity-30 disabled:pointer-events-none"
                         >
                             <Trash2 className="h-5 w-5" />
                         </Button>
@@ -269,7 +269,7 @@ const ChatInterface = ({ className = "", compact = false }: ChatInterfaceProps) 
                         <Textarea
                             ref={textareaRef}
                             placeholder="Ask anything..."
-                            className="flex-1 min-h-[50px] sm:min-h-[60px] max-h-32 resize-none rounded-2xl glass-themed-subtle text-themed-primary placeholder:text-themed-quaternary border-0 text-sm overflow-y-auto dark-scrollbar py-3 sm:py-4 px-4 focus-visible:ring-1 focus-visible:ring-zinc-500 focus-visible:ring-offset-0 transition-shadow"
+                            className="flex-1 min-h-[50px] sm:min-h-[60px] max-h-32 resize-none rounded-2xl bg-white text-zinc-900 border border-zinc-300 dark:bg-zinc-800 dark:text-zinc-100 dark:border-zinc-700 placeholder:text-zinc-500 dark:placeholder:text-zinc-400 text-sm overflow-y-auto dark-scrollbar py-3 sm:py-4 px-4 focus-visible:ring-1 focus-visible:ring-zinc-500 focus-visible:ring-offset-0 transition-shadow"
                             value={input}
                             onChange={(e) => {
                                 setInput(e.target.value);
@@ -290,7 +290,7 @@ const ChatInterface = ({ className = "", compact = false }: ChatInterfaceProps) 
                             onClick={() => sendMessage()}
                             disabled={!input.trim() || loading}
                             size="icon"
-                            className="h-10 w-10 sm:h-12 sm:w-12 shrink-0 rounded-2xl glass-themed-strong hover:glass-themed text-themed-primary transition-all border border-white/10 hover:border-white/20"
+                            className="h-10 w-10 sm:h-12 sm:w-12 shrink-0 rounded-2xl bg-zinc-200 hover:bg-zinc-300 text-zinc-700 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:text-zinc-300 transition-all border border-white/10 hover:border-white/20"
                         >
                             {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
                         </Button>

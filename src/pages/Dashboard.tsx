@@ -108,22 +108,26 @@ const Dashboard = () => {
 
             {/* Text Content */}
             <div className="relative z-10 h-full flex items-end p-8 sm:p-12">
-              <div className="max-w-xl">
-                <div className="flex items-center gap-2 mb-3">
-                  <Sparkles className="h-5 w-5 text-white" />
-                  <p className="text-white/80 font-light text-sm tracking-wide">
+              <div className="max-w-xl flex flex-col items-start space-y-4">
+                {/* Welcome Row */}
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md border border-white/20 rounded-full mb-2">
+                  <Sparkles className="h-4 w-4 text-white" />
+                  <p className="text-white text-sm font-medium tracking-wide">
                     Welcome back{user?.displayName ? `, ${user.displayName.split(' ')[0]}` : ''}!
                   </p>
                 </div>
-                <h1 className="text-white font-extralight leading-tight tracking-tighter mb-3" style={{ fontSize: 'clamp(2rem, 5vw, 3rem)' }}>
+
+                <h1 className="text-white font-extralight leading-tight tracking-tighter" style={{ fontSize: 'clamp(2rem, 5vw, 3rem)' }}>
                   Find Your Next
                   <br />
                   <span className="font-light">Adventure</span>
                 </h1>
-                <p className="text-white/80 mb-6 text-sm sm:text-base font-light">
+
+                <p className="text-white/80 text-sm sm:text-base font-light">
                   Discover amazing destinations, join travel groups, and create unforgettable memories.
                 </p>
-                <Link to="/create-group">
+
+                <Link to="/create-group" className="pt-2">
                   <Button className="gap-2 border border-white/20 rounded-full backdrop-blur-xl bg-white/10 hover:bg-white/20 text-white transition-all duration-500 hover:scale-105 px-6 py-3">
                     <Plus className="h-5 w-5" />
                     Create New Group
