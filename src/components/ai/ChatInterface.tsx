@@ -183,7 +183,7 @@ const ChatInterface = ({ className = "", compact = false }: ChatInterfaceProps) 
                                                         <div className="h-6 w-6 rounded-lg glass-themed-strong flex items-center justify-center">
                                                             <Bot className="h-3.5 w-3.5 text-themed-primary" />
                                                         </div>
-                                                        <span className="text-xs font-medium text-themed-tertiary">Wander AI</span>
+                                                        <span className="text-xs font-medium text-themed-tertiary">Travel AI</span>
                                                     </div>
                                                     <Button
                                                         variant="ghost"
@@ -231,7 +231,7 @@ const ChatInterface = ({ className = "", compact = false }: ChatInterfaceProps) 
                                             <div className="h-6 w-6 rounded-lg glass-themed-strong flex items-center justify-center">
                                                 <Bot className="h-3.5 w-3.5 text-themed-primary" />
                                             </div>
-                                            <span className="text-xs font-medium text-themed-tertiary">Wander AI</span>
+                                            <span className="text-xs font-medium text-themed-tertiary">Travel AI</span>
                                         </div>
                                         <div className="glass-themed rounded-2xl rounded-tl-md px-4 py-3">
                                             <div className="flex items-center gap-2">
